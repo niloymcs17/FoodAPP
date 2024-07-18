@@ -1,12 +1,19 @@
 import * as React from "react";
 import { Image } from "expo-image";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation, ParamListBase } from "@react-navigation/native";
 import { FontFamily, Color, FontSize, Border } from "../GlobalStyles";
 
 const Welcome = () => {
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+
   return (
-    <View style={styles.welcome}>
+    <Pressable
+      style={styles.welcome}
+      onPress={() => navigation.navigate("Login")}
+    >
       <Image
         style={styles.brookeLarkLcz9nxhosloUnsplaIcon}
         contentFit="cover"
@@ -44,7 +51,7 @@ const Welcome = () => {
         </Text>
       </View>
       <View style={styles.rectangle} />
-    </View>
+    </Pressable>
   );
 };
 
@@ -55,14 +62,13 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   skipTypo: {
-    fontFamily: FontFamily.textBox,
     textAlign: "left",
-    position: "absolute",
+    fontFamily: FontFamily.sofiaPro,
   },
   signInTypo: {
-    fontFamily: FontFamily.montserratMedium,
     fontWeight: "500",
     textAlign: "center",
+    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   frameItemLayout: {
@@ -110,8 +116,8 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_sm,
     width: 27,
     height: 11,
-    textAlign: "left",
-    color: Color.primaryColor,
+    color: Color.mainColor,
+    position: "absolute",
   },
   rectangleParent: {
     top: 26,
@@ -123,14 +129,12 @@ const styles = StyleSheet.create({
     color: Color.colorWhite,
     fontSize: FontSize.size_base,
     left: 65,
-    fontFamily: FontFamily.textBox,
+    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   signIn: {
-    textDecoration: "underline",
     color: Color.colorWhite,
     fontSize: FontSize.size_base,
-    fontFamily: FontFamily.montserratMedium,
     fontWeight: "500",
     left: 0,
     top: 0,
@@ -154,7 +158,7 @@ const styles = StyleSheet.create({
   startWithEmail: {
     top: 19,
     left: 89,
-    fontSize: FontSize.textBox_size,
+    fontSize: FontSize.size_mid,
     color: Color.colorGray_100,
   },
   rectangleGroup: {
@@ -163,17 +167,17 @@ const styles = StyleSheet.create({
   },
   welcomeTo: {
     fontSize: 53,
-    color: Color.ffffff,
+    color: Color.colorGray_200,
   },
   foodhub: {
     fontSize: 45,
-    color: Color.primaryColor,
+    color: Color.mainColor,
   },
   welcomeToFoodhubContainer: {
     fontWeight: "700",
-    fontFamily: FontFamily.robotoBold,
     height: 111,
     textAlign: "left",
+    fontFamily: FontFamily.sofiaPro,
     top: 0,
   },
   yourFavouriteFoods: {
@@ -183,8 +187,8 @@ const styles = StyleSheet.create({
     color: "#30384f",
     width: 266,
     opacity: 0.87,
-    textAlign: "left",
     left: 0,
+    position: "absolute",
   },
   welcomeToFoodhubParent: {
     top: 160,

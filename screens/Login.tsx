@@ -1,47 +1,23 @@
 import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
-import { Image } from "expo-image";
 import { Button } from "react-native-paper";
+import { Image } from "expo-image";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation, ParamListBase } from "@react-navigation/native";
+import Signup from "../components/Signup";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 
 const Login = () => {
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+
   return (
     <View style={styles.login}>
-      <View style={[styles.loginChild, styles.groupItemPosition]} />
-      <View style={styles.groupParent}>
-        <View style={styles.groupContainer}>
-          <View style={[styles.rectangleParent, styles.rectangleLayout]}>
-            <View style={styles.groupShadowBox} />
-            <Text style={[styles.facebook, styles.googleTypo]}>FACEBOOK</Text>
-            <View style={[styles.rectangleGroup, styles.groupLayout]}>
-              <View style={[styles.groupItem, styles.groupLayout]} />
-              <Image
-                style={[styles.pathIcon, styles.iconLayout]}
-                contentFit="cover"
-                source={require("../assets/path.png")}
-              />
-            </View>
-          </View>
-          <View style={[styles.rectangleContainer, styles.rectangleLayout]}>
-            <View style={styles.groupShadowBox} />
-            <Text style={[styles.google, styles.googleTypo]}>GOOGLE</Text>
-            <Image
-              style={[styles.superGIcon, styles.iconLayout]}
-              contentFit="cover"
-              source={require("../assets/super-g.png")}
-            />
-          </View>
-        </View>
-        <Text style={styles.signInWith}>Sign in with</Text>
-        <View style={styles.lineParent}>
-          <View style={[styles.lineView, styles.lineViewLayout]} />
-          <View style={[styles.groupChild1, styles.lineViewLayout]} />
-        </View>
-      </View>
+      <View style={styles.loginChild} />
       <Button
         style={styles.loginItem}
         mode="contained"
         labelStyle={styles.groupButtonBtn}
+        onPress={() => navigation.navigate("HomeScreen")}
         contentStyle={styles.groupButtonBtn1}
       >
         Login
@@ -57,18 +33,20 @@ const Login = () => {
       <Text style={[styles.text, styles.textTypo]}>$ 1679.30</Text>
       <View style={[styles.eMailParent, styles.parentPosition]}>
         <Text style={[styles.eMail, styles.eMailTypo]}>E-mail</Text>
-        <View style={styles.groupChild2ShadowBox} />
-        <Text style={styles.yourEmailOr}>Your email or phone</Text>
+        <View style={styles.groupShadowBox} />
+        <Text style={[styles.yourEmailOr, styles.textTypo]}>
+          Your email or phone
+        </Text>
       </View>
       <View style={[styles.passwordParent, styles.parentPosition]}>
         <Text style={[styles.password, styles.eMailTypo]}>Password</Text>
-        <View style={styles.groupChild2ShadowBox} />
+        <View style={styles.groupShadowBox} />
         <Image
-          style={[styles.groupIcon, styles.iconLayout]}
+          style={[styles.groupIcon, styles.groupIconLayout]}
           contentFit="cover"
           source={require("../assets/group1.png")}
         />
-        <Text style={styles.yourEmailOr}>Password</Text>
+        <Text style={[styles.yourEmailOr, styles.textTypo]}>Password</Text>
       </View>
       <Image
         style={styles.loginInner}
@@ -86,10 +64,11 @@ const Login = () => {
         source={require("../assets/ellipse-128.png")}
       />
       <Image
-        style={[styles.loginChild2, styles.parentPosition]}
+        style={[styles.loginChild2, styles.groupIconLayout]}
         contentFit="cover"
         source={require("../assets/group-17955.png")}
       />
+      <Signup path={require("../assets/path.png")} />
     </View>
   );
 };
@@ -99,182 +78,54 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 15,
     fontWeight: "600",
-    fontFamily: "Roboto-Bold",
+    fontFamily: "Sofia Pro",
   },
   groupButtonBtn1: {
     height: 60,
     width: 248,
   },
-  groupItemPosition: {
-    top: 0,
-    left: 0,
-  },
-  rectangleLayout: {
-    width: 147,
-    height: 57,
-    top: 0,
-    position: "absolute",
-  },
-  googleTypo: {
-    height: 11,
-    width: 84,
-    textAlign: "left",
-    fontFamily: FontFamily.montserratMedium,
-    fontWeight: "500",
-    letterSpacing: 0.7,
-    fontSize: FontSize.size_smi,
-    top: 24,
-    color: Color.colorBlack,
-    position: "absolute",
-  },
-  groupLayout: {
-    width: 38,
-    position: "absolute",
-  },
-  iconLayout: {
-    maxHeight: "100%",
-    maxWidth: "100%",
-    overflow: "hidden",
-  },
-  lineViewLayout: {
-    height: 1,
-    width: 103,
-    borderTopWidth: 1,
-    borderColor: Color.colorDarkgray_100,
-    borderStyle: "solid",
-    top: 0,
-    position: "absolute",
-  },
   forgotPasswordTypo: {
     height: 10,
     textAlign: "center",
-    fontSize: FontSize.size_sm,
-    fontFamily: FontFamily.montserratMedium,
+    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
+    fontSize: FontSize.size_sm,
     position: "absolute",
   },
   textTypo: {
-    fontFamily: FontFamily.robotoBold,
     textAlign: "left",
+    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   parentPosition: {
+    right: "6.4%",
+    width: "86.4%",
+    height: "11.45%",
     left: "7.2%",
     position: "absolute",
   },
   eMailTypo: {
-    color: Color.subColor,
+    color: Color.colorDarkgray_100,
     fontSize: FontSize.size_base,
     left: "0.62%",
     top: "0%",
-    fontFamily: FontFamily.textBox,
     textAlign: "left",
+    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
+  groupIconLayout: {
+    maxHeight: "100%",
+    maxWidth: "100%",
+    position: "absolute",
+    overflow: "hidden",
+  },
   loginChild: {
-    width: 375,
+    top: 0,
     left: 0,
+    width: 375,
     position: "absolute",
     height: 812,
     backgroundColor: Color.colorWhite,
-    top: 0,
-  },
-  groupShadowBox: {
-    borderRadius: Border.br_9xl_5,
-    elevation: 37.17,
-    shadowRadius: 37.17,
-    shadowColor: "rgba(211, 209, 216, 0.25)",
-    shadowOpacity: 1,
-    shadowOffset: {
-      width: 18.586957931518555,
-      height: 18.586957931518555,
-    },
-    width: 147,
-    height: 57,
-    left: 0,
-    top: 0,
-    position: "absolute",
-    backgroundColor: Color.colorWhite,
-  },
-  facebook: {
-    left: 59,
-  },
-  groupItem: {
-    borderRadius: Border.br_31xl,
-    backgroundColor: Color.colorRoyalblue,
-    height: 38,
-    left: 0,
-    top: 0,
-  },
-  pathIcon: {
-    height: "82.53%",
-    width: "45.67%",
-    top: "17.47%",
-    right: "25.72%",
-    left: "28.61%",
-    bottom: "0%",
-    maxWidth: "100%",
-    position: "absolute",
-  },
-  rectangleGroup: {
-    top: 11,
-    left: 11,
-    height: 40,
-  },
-  rectangleParent: {
-    left: 0,
-  },
-  google: {
-    left: 58,
-  },
-  superGIcon: {
-    height: "52.98%",
-    width: "20.54%",
-    top: "24.56%",
-    right: "70.07%",
-    bottom: "22.46%",
-    left: "9.39%",
-    position: "absolute",
-  },
-  rectangleContainer: {
-    left: 178,
-  },
-  groupContainer: {
-    top: 29,
-    height: 57,
-    width: 325,
-    left: 0,
-    position: "absolute",
-  },
-  signInWith: {
-    left: 126,
-    color: Color.as,
-    fontSize: FontSize.size_sm,
-    textAlign: "left",
-    fontFamily: FontFamily.montserratMedium,
-    fontWeight: "500",
-    top: 0,
-    position: "absolute",
-  },
-  lineView: {
-    left: 0,
-  },
-  groupChild1: {
-    left: 222,
-  },
-  lineParent: {
-    top: 5,
-    left: 1,
-    width: 324,
-    height: 0,
-    position: "absolute",
-  },
-  groupParent: {
-    top: 698,
-    left: 25,
-    height: 86,
-    width: 325,
-    position: "absolute",
   },
   loginItem: {
     top: 540,
@@ -284,8 +135,8 @@ const styles = StyleSheet.create({
     elevation: 40,
     shadowOpacity: 1,
     shadowOffset: {
-      width: 18.586957931518555,
-      height: 18.586957931518555,
+      width: 0,
+      height: 10,
     },
     position: "absolute",
   },
@@ -293,7 +144,7 @@ const styles = StyleSheet.create({
     color: Color.as,
   },
   signUp: {
-    color: Color.primaryColor,
+    color: Color.mainColor,
   },
   dontHaveAnContainer: {
     top: 632,
@@ -304,7 +155,7 @@ const styles = StyleSheet.create({
     top: 498,
     left: 88,
     width: 200,
-    color: Color.primaryColor,
+    color: Color.mainColor,
   },
   login1: {
     top: 180,
@@ -312,10 +163,9 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_17xl_4,
     lineHeight: 43,
     fontWeight: "600",
+    color: Color.colorBlack,
     width: 247,
     height: 40,
-    color: Color.colorBlack,
-    fontFamily: FontFamily.robotoBold,
   },
   text: {
     height: "2.96%",
@@ -329,23 +179,23 @@ const styles = StyleSheet.create({
   eMail: {
     width: "17.28%",
   },
-  groupChild2ShadowBox: {
+  groupShadowBox: {
     borderWidth: 1,
-    borderColor: Color.colorWhitesmoke_200,
+    borderColor: Color.colorWhitesmoke_100,
+    borderStyle: "solid",
     borderRadius: Border.br_3xs,
     elevation: 45,
     shadowRadius: 45,
     shadowColor: "rgba(233, 233, 233, 0.25)",
     left: "0%",
+    bottom: "0%",
     right: "0%",
     top: "30.11%",
     height: "69.89%",
-    borderStyle: "solid",
-    bottom: "0%",
     shadowOpacity: 1,
     shadowOffset: {
-      width: 18.586957931518555,
-      height: 18.586957931518555,
+      width: 0,
+      height: 10,
     },
     position: "absolute",
     width: "100%",
@@ -355,18 +205,12 @@ const styles = StyleSheet.create({
     width: "63.58%",
     top: "53.76%",
     left: "6.17%",
-    fontSize: FontSize.textBox_size,
-    color: Color.c4C4C4,
-    fontFamily: FontFamily.textBox,
-    textAlign: "left",
-    position: "absolute",
+    fontSize: FontSize.size_mid,
+    color: Color.colorSilver_100,
   },
   eMailParent: {
     top: "30.91%",
     bottom: "57.64%",
-    right: "6.4%",
-    width: "86.4%",
-    height: "11.45%",
     left: "7.2%",
   },
   password: {
@@ -379,14 +223,10 @@ const styles = StyleSheet.create({
     right: "6.91%",
     bottom: "30%",
     left: "87.65%",
-    position: "absolute",
   },
   passwordParent: {
     top: "45.94%",
     bottom: "42.61%",
-    right: "6.4%",
-    width: "86.4%",
-    height: "11.45%",
     left: "7.2%",
   },
   loginInner: {
@@ -416,9 +256,7 @@ const styles = StyleSheet.create({
     top: "4.56%",
     right: "82.67%",
     bottom: "90.76%",
-    maxHeight: "100%",
-    maxWidth: "100%",
-    overflow: "hidden",
+    left: "7.2%",
   },
   login: {
     flex: 1,
