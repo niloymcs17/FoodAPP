@@ -2,7 +2,7 @@ import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Image } from "expo-image";
 import Actionbutton from "./Actionbutton";
-import { FontFamily, FontSize, Color } from "../GlobalStyles";
+import {  FontSize, Color } from "../GlobalStyles";
 
 const OrderHistory = () => {
   return (
@@ -47,14 +47,12 @@ const styles = StyleSheet.create({
   },
   textTypo: {
     textAlign: "right",
-    fontFamily: FontFamily.sofiaPro,
     fontSize: FontSize.size_base,
     position: "absolute",
   },
   itemsTypo: {
     textAlign: "left",
     fontSize: FontSize.size_xs,
-    fontFamily: FontFamily.sofiaPro,
   },
   orderLayout: {
     height: 9,
@@ -123,7 +121,6 @@ const styles = StyleSheet.create({
     width: 89,
     textAlign: "left",
     fontSize: FontSize.size_xs,
-    fontFamily: FontFamily.sofiaPro,
     height: 9,
     top: 0,
   },

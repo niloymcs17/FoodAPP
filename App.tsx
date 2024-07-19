@@ -3,7 +3,7 @@ import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 
 import HomeScreen from "./screens/HomeScreen";
-import MyOrdersUpcoming from "./screens/MyOrdersUpcoming";
+import MyOrders from "./screens/MyOrders";
 import Profile from "./screens/Profile";
 import Cart from "./screens/Cart";
 import SearchItem from "./screens/SearchItem";
@@ -30,8 +30,8 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="MyOrdersUpcoming"
-              component={MyOrdersUpcoming}
+              name="MyOrders"
+              component={MyOrders}
               options={{ headerShown: false }}
             />
             <Stack.Screen

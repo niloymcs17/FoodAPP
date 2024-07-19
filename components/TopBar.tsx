@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation, ParamListBase } from '@react-navigation/native';
-import { FontFamily, FontSize, Color, Padding } from '../GlobalStyles';
+import {  FontSize, Color, Padding } from '../GlobalStyles';
 
 const TopBar = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_sm,
     lineHeight: 17,
     color: Color.colorLightslategray_100,
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: '500',
     textAlign: 'center',
   },

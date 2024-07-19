@@ -4,7 +4,7 @@ import { StyleSheet, View, Text, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
-import { FontFamily, Color, FontSize, Border } from "../GlobalStyles";
+import {  Color, FontSize, Border } from "../GlobalStyles";
 
 const Welcome = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -63,12 +63,10 @@ const styles = StyleSheet.create({
   },
   skipTypo: {
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
   },
   signInTypo: {
     fontWeight: "500",
     textAlign: "center",
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   frameItemLayout: {
@@ -129,7 +127,6 @@ const styles = StyleSheet.create({
     color: Color.colorWhite,
     fontSize: FontSize.size_base,
     left: 65,
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   signIn: {
@@ -177,7 +174,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     height: 111,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     top: 0,
   },
   yourFavouriteFoods: {

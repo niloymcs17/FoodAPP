@@ -3,9 +3,8 @@ import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, FlatList } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
-import Search from "../components/Search";
 import Items from "../components/Items";
-import { FontSize, FontFamily, Color } from "../GlobalStyles";
+import { FontSize,  Color } from "../GlobalStyles";
 import SearchBar from "../components/Search";
 import { useState } from "react";
 import { Item } from "../Const";
@@ -71,8 +70,7 @@ const styles = StyleSheet.create({
     search: {
         fontSize: FontSize.size_lg,
         fontWeight: "500",
-        fontFamily: FontFamily.sofiaPro,
-        color: Color.colorGray_200,
+            color: Color.colorGray_200,
         textAlign: "center",
         textShadowColor: "rgba(0, 0, 0, 0.25)",
         textShadowOffset: {

@@ -3,7 +3,7 @@ import { Text, StyleSheet, ScrollView, View, Pressable, TouchableOpacity, TextIn
 import { Image } from 'expo-image';
 import TopBar from '../components/TopBar';
 import Search from '../components/Search';
-import { FontFamily, Color, FontSize } from '../GlobalStyles';
+import {  Color, FontSize } from '../GlobalStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import SearchBar from '../components/Search';
@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
     color: '#323643',
     textAlign: 'left',
     marginTop: 20,
-    fontFamily: FontFamily.sofiaPro,
   },
   category: {
     width: '100%',
@@ -96,7 +95,6 @@ const styles = StyleSheet.create({
     color: Color.colorBlack,
     marginLeft: 10,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
   },
   itemImage: {
     width: 81,

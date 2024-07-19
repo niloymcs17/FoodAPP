@@ -1,12 +1,10 @@
-/* fonts */
-export const FontFamily = {
-  sofiaPro: "Sofia Pro",
-};
+
 /* font sizes */
 export const FontSize = {
   size_sm: 14,
   size_mini: 15,
   size_lg: 18,
+  size_md: 18,
   size_base: 16,
   size_xs: 12,
   size_20xl_3: 39,
@@ -43,6 +41,7 @@ export const Padding = {
 /* border radiuses */
 export const Border = {
   br_81xl: 100,
+  br_md: 15,
   br_3xs: 10,
   br_9xl_5: 29,
   br_lg_2: 18,

@@ -2,7 +2,7 @@ import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Image } from "expo-image";
 import Actionbutton from "./Actionbutton";
-import { FontFamily, FontSize, Color } from "../GlobalStyles";
+import {  FontSize, Color } from "../GlobalStyles";
 
 const Ongoingorder = () => {
   return (
@@ -50,14 +50,12 @@ const styles = StyleSheet.create({
     left: 0,
   },
   textTypo: {
-    fontFamily: FontFamily.sofiaPro,
     fontSize: FontSize.size_base,
     position: "absolute",
   },
   nowTypo: {
     color: Color.colorDarkgray_100,
     fontSize: FontSize.size_xs,
-    fontFamily: FontFamily.sofiaPro,
     top: 0,
     position: "absolute",
   },
@@ -68,7 +66,6 @@ const styles = StyleSheet.create({
   },
   minClr: {
     color: Color.colorGray_200,
-    fontFamily: FontFamily.sofiaPro,
   },
   statusLayout: {
     width: 109,
@@ -176,7 +173,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_sm,
     lineHeight: 20,
     color: Color.colorGray_200,
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
     textAlign: "right",
     height: 24,

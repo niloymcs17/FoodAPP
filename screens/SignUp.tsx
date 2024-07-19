@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import Signup from "../components/Signup";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
-import { Color, FontFamily, FontSize } from "../GlobalStyles";
+import { Color, FontSize } from "../GlobalStyles";
 
 const SignUp = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -25,7 +25,7 @@ const SignUp = () => {
       <Text style={[styles.text, styles.textTypo]}>$ 1679.30</Text>
       <Button
         style={styles.signUpInner}
-        mode="elevated"
+        mode="text"
         labelStyle={styles.groupButtonBtn}
         onPress={() => navigation.navigate("HomeScreen")}
         contentStyle={styles.groupButtonBtn1}
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   textTypo: {
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
+     
     position: "absolute",
   },
   emailPosition: {
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_base,
     width: "86.4%",
     height: "11.45%",
-    fontFamily: FontFamily.sofiaPro,
+     
     position: "absolute",
   },
   signUpChild: {
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_base,
     width: "86.4%",
     height: "11.45%",
-    fontFamily: FontFamily.sofiaPro,
+     
     position: "absolute",
   },
   text: {
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: 218,
     height: 10,
-    fontFamily: FontFamily.sofiaPro,
+     
     position: "absolute",
   },
   password: {

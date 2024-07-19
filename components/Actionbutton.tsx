@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { StyleSheet, View, Text } from "react-native";
-import { FontFamily, FontSize, Border, Color } from "../GlobalStyles";
+import { FontSize, Border, Color } from "../GlobalStyles";
 
 export type ActionbuttonType = {
   trackOrder?: string;
@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
   },
   cancelTypo: {
     textAlign: "center",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
     fontSize: FontSize.size_mini,
     top: "34.88%",

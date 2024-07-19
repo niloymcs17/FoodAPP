@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Text, StyleSheet, View } from "react-native";
-import { FontFamily, Color, FontSize, Border } from "../GlobalStyles";
+import {  Color, FontSize, Border } from "../GlobalStyles";
 
 const FullNameForm = () => {
   return (
@@ -26,14 +26,12 @@ const FullNameForm = () => {
 const styles = StyleSheet.create({
   textTypo: {
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   eMailTypo: {
     left: "2.93%",
     textAlign: "left",
     color: Color.colorDarkgray_100,
-    fontFamily: FontFamily.sofiaPro,
     fontSize: FontSize.size_base,
     position: "absolute",
   },
@@ -61,7 +59,6 @@ const styles = StyleSheet.create({
     left: "4.69%",
     color: Color.colorGray_200,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   fullName: {
@@ -70,7 +67,6 @@ const styles = StyleSheet.create({
     color: Color.colorDarkgray_100,
     fontSize: FontSize.size_base,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     top: "0%",
   },
   groupChild: {
@@ -103,7 +99,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: Color.colorGray_200,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   fullNameParent: {
@@ -124,7 +119,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: Color.colorWhite,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
   },
   eMail: {
     width: "16.42%",

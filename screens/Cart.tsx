@@ -4,7 +4,7 @@ import { StyleSheet, Pressable, Text, View } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import Items from "../components/Items";
-import { FontFamily, Color, Border, FontSize, Padding } from "../GlobalStyles";
+import {  Color, Border, FontSize, Padding } from "../GlobalStyles";
 
 const Cart = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
     height: 16,
     textAlign: "left",
     position: "absolute",
-    fontFamily: FontFamily.sofiaPro,
   },
   groupLayout: {
     height: 44,
@@ -88,7 +87,6 @@ const styles = StyleSheet.create({
     color: Color.colorWhite,
     position: "absolute",
     textAlign: "center",
-    fontFamily: FontFamily.sofiaPro,
   },
   applyTypo1: {
     fontSize: FontSize.size_base,
@@ -109,7 +107,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
     marginLeft: 20,
     textAlign: "center",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
     flex: 1,
   },
@@ -201,7 +198,6 @@ const styles = StyleSheet.create({
     height: 16,
     textAlign: "left",
     position: "absolute",
-    fontFamily: FontFamily.sofiaPro,
     alignSelf: "stretch",
   },
   cart: {

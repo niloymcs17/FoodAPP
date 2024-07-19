@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TextInput } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import debounce from 'lodash.debounce'; // Import debounce from lodash
-import { Color, FontFamily, FontSize } from '../GlobalStyles';
+import { Color,  FontSize } from '../GlobalStyles';
 
 // Define prop types
 type SearchBarProps = {

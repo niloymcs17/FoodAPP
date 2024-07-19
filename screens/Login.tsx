@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import Signup from "../components/Signup";
-import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
+import {  FontSize, Color, Border } from "../GlobalStyles";
 
 const Login = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -87,14 +87,12 @@ const styles = StyleSheet.create({
   forgotPasswordTypo: {
     height: 10,
     textAlign: "center",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
     fontSize: FontSize.size_sm,
     position: "absolute",
   },
   textTypo: {
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   parentPosition: {
@@ -110,7 +108,6 @@ const styles = StyleSheet.create({
     left: "0.62%",
     top: "0%",
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     position: "absolute",
   },
   groupIconLayout: {

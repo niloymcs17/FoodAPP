@@ -1,7 +1,7 @@
 import * as React from "react";
 import { View, StyleSheet, Text, ImageSourcePropType } from "react-native";
 import { Image } from "expo-image";
-import { FontFamily, Color, Border, FontSize } from "../GlobalStyles";
+import {  Color, Border, FontSize } from "../GlobalStyles";
 
 export type SignupType = {
   path?: ImageSourcePropType;
@@ -54,7 +54,6 @@ const styles = StyleSheet.create({
   },
   googleTypo: {
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
     position: "absolute",
   },
@@ -100,7 +99,6 @@ const styles = StyleSheet.create({
     width: "57.14%",
     height: "19.3%",
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
   },
   groupItem: {
@@ -146,7 +144,6 @@ const styles = StyleSheet.create({
     width: "57.14%",
     height: "19.3%",
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
   },
   superGIcon: {
@@ -178,7 +175,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_sm,
     color: Color.as,
     textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
     fontWeight: "500",
     top: "0%",
   },

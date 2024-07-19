@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View, ImageSourcePropType, TouchableOpacity } from "react-native";
-import { FontFamily, FontSize, Color, Padding } from "../GlobalStyles";
+import {  FontSize, Color, Padding } from "../GlobalStyles";
 
 export type ItemsType = {
   maskGroup?: ImageSourcePropType;
@@ -43,8 +43,7 @@ const Items = ({ maskGroup, label, price  }: ItemsType) => {
         redNHotTypo: {
           width: "auto",
           textAlign: "left",
-          fontFamily: FontFamily.sofiaPro,
-          fontSize: FontSize.size_lg,
+                fontSize: FontSize.size_lg,
           color: Color.colorBlack,
           fontWeight: "600",
         },
