@@ -1,76 +1,74 @@
-import React, { useMemo } from "react";
-import { StyleSheet, View, Pressable } from "react-native";
-import { Image } from "expo-image";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation, ParamListBase } from "@react-navigation/native";
-import { Border, Color } from "../GlobalStyles";
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TextInput } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import debounce from 'lodash.debounce'; // Import debounce from lodash
+import { Color, FontFamily, FontSize } from '../GlobalStyles';
 
-export type SearchType = {
-  /** Style props */
-  propAlignSelf?: string;
-  propMarginTop?: number | string;
-  propWidth?: number | string;
+// Define prop types
+type SearchBarProps = {
+  editable?: boolean; // Optional prop to control if the text field is editable
+  onChangeText?: (text: string) => void; // Optional callback to handle text changes
 };
 
-const getStyleValue = (key: string, value: string | number | undefined) => {
-  if (value === undefined) return;
-  return { [key]: value === "unset" ? undefined : value };
-};
-const Search = ({ propAlignSelf, propMarginTop, propWidth }: SearchType) => {
-  const searchStyle = useMemo(() => {
-    return {
-      ...getStyleValue("alignSelf", propAlignSelf),
-      ...getStyleValue("marginTop", propMarginTop),
-      ...getStyleValue("width", propWidth),
-    };
-  }, [propAlignSelf, propMarginTop, propWidth]);
+const SearchBar: React.FC<SearchBarProps> = ({
+  editable = false,
+  onChangeText,
+}) => {
+  const [text, setText] = useState('');
 
-  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+  // Debounced version of the onChangeText callback
+  const debouncedOnChange = debounce((newText: string) => {
+    if (onChangeText) {
+      onChangeText(newText);
+    }
+  }, 1000); // Debounce delay of 2 seconds
+
+  useEffect(() => {
+    debouncedOnChange(text);
+  }, [text]);
+
+  const handleChange = (newText: string) => {
+    setText(newText);
+  };
 
   return (
-    <Pressable
-      style={[styles.search, searchStyle]}
-      onPress={() => navigation.navigate("SearchItem")}
-    >
-      <View style={styles.searchChild} />
-      <Image
-        style={styles.vectorIcon}
-        contentFit="cover"
-        source={require("../assets/vector1.png")}
+    <View style={styles.container}>
+      <FontAwesome name="search" style={styles.icon} />
+      <TextInput
+        style={styles.input}
+        placeholder="Search item"
+        placeholderTextColor={Color.colorGray_200}
+        value={text}
+        onChangeText={handleChange}
+        editable={editable} // Control editability with prop
       />
-    </Pressable>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  searchChild: {
-    flex: 1,
-    shadowColor: "rgba(0, 0, 0, 0.25)",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowRadius: 4,
-    elevation: 4,
-    shadowOpacity: 1,
-    borderRadius: Border.br_3xs,
-    borderStyle: "solid",
-    borderColor: Color.colorBlack,
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Color.colorWhite,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    height: 40,
+    borderColor: Color.colorGray_200,
     borderWidth: 1,
-    height: 36,
+    width: "100%", // Take full width minus padding
   },
-  vectorIcon: {
-    width: 32,
-    height: 32,
-    marginLeft: 20,
+  icon: {
+    fontSize: 20,
+    color: Color.colorGray_200,
+    marginRight: 10,
   },
-  search: {
-    alignSelf: "stretch",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
+  input: {
+    flex: 1,
+    fontSize: FontSize.size_mid,
+    color: Color.colorBlack,
+    borderBlockColor:Color.colorWhite
   },
 });
 
-export default Search;
+export default SearchBar;

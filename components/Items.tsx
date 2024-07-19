@@ -1,179 +1,123 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View, ImageSourcePropType } from "react-native";
+import { StyleSheet, Text, View, ImageSourcePropType, TouchableOpacity } from "react-native";
 import { FontFamily, FontSize, Color, Padding } from "../GlobalStyles";
 
 export type ItemsType = {
   maskGroup?: ImageSourcePropType;
-
-  /** Style props */
-  spicyChickenBeefAlignSelf?: string;
-  spicyChickenBeefMarginTop?: number | string;
-  spicyChickenBeefWidth?: number | string;
-  spicyChickenBeefHeight?: number | string;
+  label: string;
+  price: string;
 };
 
-const getStyleValue = (key: string, value: string | number | undefined) => {
-  if (value === undefined) return;
-  return { [key]: value === "unset" ? undefined : value };
-};
-const Items = ({
-  maskGroup,
-  spicyChickenBeefAlignSelf,
-  spicyChickenBeefMarginTop,
-  spicyChickenBeefWidth,
-  spicyChickenBeefHeight,
-}: ItemsType) => {
-  const itemsStyle = useMemo(() => {
-    return {
-      ...getStyleValue("alignSelf", spicyChickenBeefAlignSelf),
-      ...getStyleValue("marginTop", spicyChickenBeefMarginTop),
-      ...getStyleValue("width", spicyChickenBeefWidth),
-      ...getStyleValue("height", spicyChickenBeefHeight),
-    };
-  }, [
-    spicyChickenBeefAlignSelf,
-    spicyChickenBeefMarginTop,
-    spicyChickenBeefWidth,
-    spicyChickenBeefHeight,
-  ]);
+const Items = ({ maskGroup, label, price  }: ItemsType) => {
+  const [quantity, setQuantity] = useState(0); // Initial quantity set to 0
+
+  const incrementQuantity = () => setQuantity(quantity + 1);
+  const decrementQuantity = () => setQuantity(quantity > 0 ? quantity - 1 : 0);
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        button: {
+          height: 30,
+          width: 30,
+          borderRadius: 15,
+          fontSize: 18,
+          backgroundColor: Color.mainColor,
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: Color.colorWhite,
+          textAlign: 'center',
+          lineHeight: 30, // Ensures the text is vertically centered
+        },
+        quantity: {
+          flexDirection: "row", // Ensures horizontal alignment
+          justifyContent: "space-between", // Adds space between items
+          alignItems: "center", // Aligns items vertically centered
+          width: 100,
+        },
+        itemsFlexBox: {
+          alignItems: "center",
+          flexDirection: "row",
+        },
+        redNHotTypo: {
+          width: "auto",
+          textAlign: "left",
+          fontFamily: FontFamily.sofiaPro,
+          fontSize: FontSize.size_lg,
+          color: Color.colorBlack,
+          fontWeight: "600",
+        },
+        label: {
+          fontSize: FontSize.size_mid,
+          textAlign: "left",
+          fontWeight: "600",
+        },
+        foodimage: {
+          height: 82,
+          width: 82, // Ensures the image is square
+          borderRadius: 41, // Makes the image circular
+          overflow: 'hidden', // Ensures the image is clipped to the border radius
+        },
+        itemprice: {
+          color: Color.mainColor,
+          width: 49,
+        },
+        itempriceParent: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 9,
+        },
+        groupParent: {
+          justifyContent: "center",
+          marginLeft: 15,
+          flex: 1,
+        },
+        items: {
+          flexDirection: "row",
+          paddingHorizontal: Padding.p_8xs,
+          paddingVertical: Padding.p_3xs,
+          zIndex: 1,
+          marginTop: 20,
+          backgroundColor: Color.colorWhite,
+          borderRadius: 10,
+          elevation: 3, // Android shadow
+          shadowColor: "#000", // iOS shadow
+          shadowOffset: { width: 0, height: 2 }, // iOS shadow
+          shadowOpacity: 0.25, // iOS shadow
+          shadowRadius: 3.84, // iOS shadow
+        },
+      }),
+    [quantity]
+  );
 
   return (
-    <View style={[styles.items, styles.itemsFlexBox, itemsStyle]}>
+    <View style={styles.items}>
       <Image
-        style={styles.maskGroupIcon}
-        contentFit="cover"
+        style={styles.foodimage}
+        contentFit="scale-down"
         source={maskGroup}
       />
       <View style={styles.groupParent}>
-        <View style={styles.redNHotPizzaParent}>
-          <Text style={[styles.redNHot, styles.redNHotTypo]}>
-            Red n hot pizza
-          </Text>
-          <Text style={[styles.spicyChickenBeef, styles.redNHotTypo]}>
-            Spicy chicken, beef
-          </Text>
+        <View>
+          <Text style={styles.label}>{label}</Text>
         </View>
-        <View style={[styles.itempriceParent, styles.itemsFlexBox]}>
-          <Text style={[styles.itemprice, styles.textTypo]}>$15.30</Text>
-          <View style={styles.addParent}>
-            <Image
-              style={[styles.addIcon, styles.iconLayout]}
-              contentFit="cover"
-              source={require("../assets/add.png")}
-            />
-            <Image
-              style={[styles.minusIcon, styles.iconLayout]}
-              contentFit="cover"
-              source={require("../assets/minus.png")}
-            />
-            <Text style={[styles.text, styles.textTypo]}>02</Text>
+        <View style={styles.itempriceParent}>
+          <Text style={styles.itemprice}>₹{price}</Text>
+          <View style={styles.quantity}>
+            <TouchableOpacity onPress={decrementQuantity}>
+              <Text style={styles.button}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.label}>{quantity < 10 ? `0${quantity}` : quantity}</Text>
+            <TouchableOpacity onPress={incrementQuantity}>
+              <Text style={styles.button}>+</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  itemsFlexBox: {
-    alignItems: "center",
-    flexDirection: "row",
-    alignSelf: "stretch",
-  },
-  redNHotTypo: {
-    width: 154,
-    textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
-    left: 0,
-    position: "absolute",
-  },
-  textTypo: {
-    fontSize: FontSize.size_base,
-    textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
-    fontWeight: "600",
-  },
-  iconLayout: {
-    maxHeight: "100%",
-    bottom: "0%",
-    top: "0%",
-    width: "31.72%",
-    height: "100%",
-    position: "absolute",
-    overflow: "hidden",
-    maxWidth: "100%",
-  },
-  maskGroupIcon: {
-    height: 82,
-    overflow: "hidden",
-    maxWidth: "100%",
-    flex: 1,
-  },
-  redNHot: {
-    top: 0,
-    fontSize: FontSize.size_lg,
-    color: Color.colorBlack,
-    fontWeight: "600",
-    width: 154,
-    textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
-    left: 0,
-  },
-  spicyChickenBeef: {
-    top: 26,
-    fontSize: FontSize.size_sm,
-    fontWeight: "300",
-    color: Color.colorLightslategray_200,
-    width: 154,
-    textAlign: "left",
-    fontFamily: FontFamily.sofiaPro,
-    left: 0,
-  },
-  redNHotPizzaParent: {
-    height: 40,
-    alignSelf: "stretch",
-  },
-  itemprice: {
-    color: Color.mainColor,
-    width: 49,
-  },
-  addIcon: {
-    right: "0.11%",
-    left: "68.17%",
-  },
-  minusIcon: {
-    right: "68.28%",
-    left: "0%",
-  },
-  text: {
-    height: "48.76%",
-    width: "22.26%",
-    top: "27.92%",
-    left: "40%",
-    color: Color.colorBlack,
-    position: "absolute",
-    fontSize: FontSize.size_base,
-  },
-  addParent: {
-    width: 93,
-    height: 28,
-  },
-  itempriceParent: {
-    justifyContent: "space-between",
-    marginTop: 9,
-  },
-  groupParent: {
-    justifyContent: "center",
-    marginLeft: 15,
-    flex: 1,
-  },
-  items: {
-    paddingHorizontal: Padding.p_8xs,
-    paddingVertical: Padding.p_3xs,
-    zIndex: 1,
-    marginTop: 20,
-  },
-});
 
 export default Items;
