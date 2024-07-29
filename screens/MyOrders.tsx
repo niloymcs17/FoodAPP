@@ -6,10 +6,12 @@ import { useNavigation, ParamListBase } from "@react-navigation/native";
 import Ongoingorder from "../components/Ongoingorder";
 import OrderHistory from "../components/OrderHistory";
 import { FontSize,  Color, Border } from "../GlobalStyles";
+import { ORDER } from "../Const/Order.const";
 
 const MyOrders = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const [activeTab, setActiveTab] = useState('Ongoing');
+  const order = ORDER;
 
   return (
     <View style={styles.myOrdersContainer}>
@@ -44,7 +46,7 @@ const MyOrders = () => {
           </Text>
         </Pressable>
       </View>
-      {activeTab === 'Ongoing' ? <Ongoingorder /> : <OrderHistory />}
+      {activeTab === 'Ongoing' ? <Ongoingorder  data={order} /> : <OrderHistory />}
     </View>
   );
 };
@@ -76,8 +78,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 20,
-    backgroundColor: Color.colorLightslategray_100,
+    backgroundColor: Color.colorWhite,
     borderRadius: Border.br_md,
+    borderColor: Color.mainColor
   },
   tab: {
     flex: 1,
@@ -96,7 +99,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: FontSize.size_sm,
-    color: Color.colorWhite,
+    color: Color.mainColor,
   },
   activeTabText: {
     color: Color.colorWhite,

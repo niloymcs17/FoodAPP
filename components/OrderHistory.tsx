@@ -1,14 +1,12 @@
 import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Image } from "expo-image";
-import Actionbutton from "./Actionbutton";
-import {  FontSize, Color } from "../GlobalStyles";
+import { FontSize, Color } from "../GlobalStyles";
 
 const OrderHistory = () => {
   return (
     <View style={[styles.rectangleParent, styles.groupChildLayout]}>
-      <View style={[styles.groupChild, styles.groupChildPosition]} />
-      <Actionbutton trackOrder="Re-Order" cancel="Rate" propTop={107} />
+      
       <View style={styles.jimmyJohnsParent}>
         <Text
           style={[styles.jimmyJohns, styles.textTypo]}
