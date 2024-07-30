@@ -83,7 +83,7 @@ const Items = React.memo(({ item }: ItemsProps) => {
           flexDirection: "row",
           paddingHorizontal: Padding.p_8xs,
           paddingVertical: Padding.p_3xs,
-          marginTop: 20,
+          margin: 5,
           backgroundColor: Color.colorWhite,
           borderRadius: 10,
           elevation: 3,
@@ -100,7 +100,7 @@ const Items = React.memo(({ item }: ItemsProps) => {
     <View style={styles.items}>
       <Image
         style={styles.foodimage}
-        contentFit="scale-down"
+        contentFit="cover"
         source={item.image}
       />
       <View style={styles.groupParent}>

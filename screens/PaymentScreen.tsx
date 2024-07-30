@@ -16,7 +16,7 @@ const PaymentScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Payment</Text>
-      <Text style={styles.totalAmount}>Total Amount: $100</Text> {/* Replace with actual total */}
+      <Text style={styles.totalAmount}>Total Amount: $100</Text>
       <Pressable style={styles.payButton} onPress={handlePayment}>
         <Text style={styles.payButtonText}>Pay Now</Text>
       </Pressable>

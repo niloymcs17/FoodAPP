@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import SearchBar from '../components/Search';
 import { CATAGORY, Catagory } from '../Const/Catagory.const';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const catagories: Catagory[] = CATAGORY
@@ -19,7 +20,7 @@ const HomeScreen = () => {
   };
 
   return (
-    <View style={styles.homeScreen}>
+    <SafeAreaView style={styles.homeScreen}>
       <TopBar />
       <Text style={styles.title}>{`What would you like to order?`}</Text>
       <TouchableOpacity style={styles.searchBar} onPress={() => handlePress('')}>
@@ -35,7 +36,7 @@ const HomeScreen = () => {
           </Pressable>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

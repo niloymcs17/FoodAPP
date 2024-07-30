@@ -8,6 +8,7 @@ import { FontSize, Color } from "../GlobalStyles";
 import SearchBar from "../components/Search";
 import { useState, useEffect } from "react";
 import { ITEM, Item } from "../Const/Items.const";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const SearchItem = () => {
     const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -35,7 +36,7 @@ const SearchItem = () => {
     };
 
     return (
-        <View style={styles.searchItem}>
+        <SafeAreaView  style={styles.searchItem}>
             <View style={styles.navBar}>
                 <Pressable
                     style={styles.back}
@@ -63,7 +64,7 @@ const SearchItem = () => {
                 renderItem={({ item }) => <Items item={item} />}
                 keyExtractor={item => item.id}
             />
-        </View>
+        </SafeAreaView >
     );
 };
 

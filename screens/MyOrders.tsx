@@ -7,6 +7,7 @@ import Ongoingorder from "../components/Ongoingorder";
 import OrderHistory from "../components/OrderHistory";
 import { FontSize,  Color, Border } from "../GlobalStyles";
 import { ORDER } from "../Const/Order.const";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyOrders = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
@@ -15,7 +16,7 @@ const MyOrders = () => {
   const pastOrder = ORDER.filter((item:any)=> item.status == 'delivered');
 
   return (
-    <View style={styles.myOrdersContainer}>
+    <SafeAreaView style={styles.myOrdersContainer}>
       <View style={styles.navbar}>
         <Pressable
           style={styles.backButton}
@@ -48,7 +49,7 @@ const MyOrders = () => {
         </Pressable>
       </View>
       {activeTab === 'Ongoing' ? <Ongoingorder  data={ongoingOrder} /> : <OrderHistory />}
-    </View>
+    </SafeAreaView>
   );
 };
 

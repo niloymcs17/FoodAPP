@@ -22,7 +22,7 @@
     "@react-navigation/stack": "^6.4.1",
     "@reduxjs/toolkit": "^2.2.7",
     "@types/react": "~18.2.45",
-    "expo": "~50.0.14",
+    "expo": "^51.0.23",
     "expo-asset": "~10.0.10",
     "expo-constants": "~15.4.6",
     "expo-font": "~11.10.3",

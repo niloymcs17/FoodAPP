@@ -6,6 +6,7 @@ import Items from "../components/Items";
 import { FontSize, Color, Padding } from "../GlobalStyles";
 import { useNavigation } from '@react-navigation/native';
 import { SCREEN_NAME } from "../Const/ScreenName.const";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const CartScreen = () => {
   // Retrieve cart items from Redux store and convert object to array
@@ -32,7 +33,7 @@ const CartScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <FlatList
         data={cartItems}
         renderItem={renderItem}
@@ -41,7 +42,7 @@ const CartScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handlePress}>
         <Text style={styles.buttonText}>Total: ₹{totalPrice.toFixed(2)}</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -13,18 +13,19 @@ import CartScreen from "./screens/CartScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import { SCREEN_NAME } from "./Const/ScreenName.const";
 import { selectCartItemsCount } from "./store/cartSlice";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const TabNavigator = () => {
-const cartItemCount = useSelector(selectCartItemsCount);
-const [itemCount, setItemCount] = useState(0)
-useEffect(() => {
-  if (cartItemCount) {
-    setItemCount(cartItemCount);
-  }
-}, [cartItemCount]);
- return ( <Tab.Navigator
+  const cartItemCount = useSelector(selectCartItemsCount);
+  const [itemCount, setItemCount] = useState(0)
+  useEffect(() => {
+    if (cartItemCount) {
+      setItemCount(cartItemCount);
+    }
+  }, [cartItemCount]);
+  return (<Tab.Navigator
     screenOptions={({ route }) => ({
       tabBarIcon: ({ focused, color, size }) => {
         let iconName = "home";
@@ -62,14 +63,16 @@ const App = () => {
 
   return (
     <Provider store={store}>
-      <NavigationContainer>
-        {hideSplashScreen ? (
-          <MainStackNavigator />
-        ) : (
-          // SplashScreen component goes here
-          <MainStackNavigator />
-        )}
-      </NavigationContainer>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          {hideSplashScreen ? (
+            <MainStackNavigator />
+          ) : (
+            // SplashScreen component goes here
+            <MainStackNavigator />
+          )}
+        </NavigationContainer>
+      </SafeAreaProvider>
     </Provider>
   );
 };
