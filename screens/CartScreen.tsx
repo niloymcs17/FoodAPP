@@ -17,7 +17,7 @@ const CartScreen = () => {
   
   // Calculate total price
   const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + Number(item.price) * item.quantity,
     0
   );
 

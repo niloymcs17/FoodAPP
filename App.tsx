@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { Ionicons } from '@expo/vector-icons';
 
 import { store } from "./store/store";
@@ -12,12 +12,19 @@ import SearchItem from "./screens/SearchItem";
 import CartScreen from "./screens/CartScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import { SCREEN_NAME } from "./Const/ScreenName.const";
+import { selectCartItemsCount } from "./store/cartSlice";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-
-const TabNavigator = () => (
-  <Tab.Navigator
+const TabNavigator = () => {
+const cartItemCount = useSelector(selectCartItemsCount);
+const [itemCount, setItemCount] = useState(0)
+useEffect(() => {
+  if (cartItemCount) {
+    setItemCount(cartItemCount);
+  }
+}, [cartItemCount]);
+ return ( <Tab.Navigator
     screenOptions={({ route }) => ({
       tabBarIcon: ({ focused, color, size }) => {
         let iconName = "home";
@@ -38,9 +45,9 @@ const TabNavigator = () => (
   >
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.HOME} component={HomeScreen} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.ORDER} component={MyOrders} />
-    <Tab.Screen options={{ headerShown: false, tabBarBadge: 3 }} name={SCREEN_NAME.CART} component={CartScreen} />
-  </Tab.Navigator>
-);
+    <Tab.Screen options={{ headerShown: false, tabBarBadge: itemCount }} name={SCREEN_NAME.CART} component={CartScreen} />
+  </Tab.Navigator>)
+};
 
 const MainStackNavigator = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Item } from '../Const/Items.const';
+import { RootState } from './store';
 
 interface CartItem extends Item {
   quantity: number;
@@ -12,6 +13,10 @@ interface CartState {
 const initialState: CartState = {
   items: {},
 };
+
+interface RootState {
+  cart: CartState;
+}
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -46,4 +51,9 @@ const cartSlice = createSlice({
 });
 
 export const { updateCartItem, clearCart } = cartSlice.actions;
+// Selector to get total count of items in the cart
+export const selectCartItemsCount = (state: RootState) => {
+  const cartItems = Object.values(state.cart.items);
+  return cartItems.length;
+};
 export default cartSlice.reducer;
