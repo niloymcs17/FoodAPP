@@ -1,28 +1,31 @@
 import React, { useMemo, useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View, ImageSourcePropType, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Pressable } from "react-native";
 import { FontSize, Color, Padding } from "../GlobalStyles";
 import { useDispatch } from "react-redux";
 import { updateCartItem } from "../store/cartSlice";
 import { Item } from "../Const/Items.const";
 
 interface ItemsProps {
-  item: Item;
+  item: Item & { quantity?: string }; // Quantity is optional
 }
 
-
-const Items = ({item}:ItemsProps) => {
-  const [quantity, setQuantity] = useState(0); // Initial quantity set to 0
+const Items = ({ item }: ItemsProps) => {
+  console.log(item)
+  const [quantity, setQuantity] = useState(Number(item.quantity) || 0); // Initial quantity set to 0
   const dispatch = useDispatch();
-  const incrementQuantity = () => {
-    setQuantity(quantity + 1);
-    dispatch(updateCartItem( {item , quantity} ))
-  }
-  const decrementQuantity = () => {
-    setQuantity(quantity > 0 ? quantity - 1 : 0);
-    dispatch(updateCartItem( {item , quantity} ))
 
-  }
+  const incrementQuantity = () => {
+    const newQuantity = quantity + 1;
+    setQuantity(newQuantity);
+    dispatch(updateCartItem({ item, quantity: newQuantity }));
+  };
+
+  const decrementQuantity = () => {
+    const newQuantity = quantity > 0 ? quantity - 1 : 0;
+    setQuantity(newQuantity);
+    dispatch(updateCartItem({ item, quantity: newQuantity }));
+  };
 
   const styles = useMemo(
     () =>
@@ -114,13 +117,13 @@ const Items = ({item}:ItemsProps) => {
         <View style={styles.itempriceParent}>
           <Text style={styles.itemprice}>₹{item.price}</Text>
           <View style={styles.quantity}>
-            <TouchableOpacity onPress={decrementQuantity}>
-              <Text style={styles.button}>-</Text>
-            </TouchableOpacity>
+            <Pressable onPress={decrementQuantity} style={styles.button}>
+              <Text>-</Text>
+            </Pressable>
             <Text style={styles.label}>{quantity < 10 ? `0${quantity}` : quantity}</Text>
-            <TouchableOpacity onPress={incrementQuantity}>
-              <Text style={styles.button}>+</Text>
-            </TouchableOpacity>
+            <Pressable onPress={incrementQuantity} style={styles.button}>
+              <Text>+</Text>
+            </Pressable>
           </View>
         </View>
       </View>

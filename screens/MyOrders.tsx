@@ -19,7 +19,7 @@ const MyOrders = () => {
       <View style={styles.navbar}>
         <Pressable
           style={styles.backButton}
-          onPress={() => navigation.navigate("HomeScreen")}
+          onPress={() => navigation.goBack()}
         >
           <Image
             style={styles.backIcon}

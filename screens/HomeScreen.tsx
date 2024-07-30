@@ -27,7 +27,7 @@ const HomeScreen = () => {
       </TouchableOpacity>
       <ScrollView style={styles.category} contentContainerStyle={styles.scrollViewContent}>
         {catagories.map((item, index) => (
-          <Pressable onPress={() => handlePress(item.title)}>
+          <Pressable key={index} onPress={() => handlePress(item.title)}>
             <View key={index} style={styles.itemContainer}>
               <Image style={styles.itemImage} contentFit="cover" source={item.image} />
               <Text style={styles.itemTitle}>{item.title}</Text>

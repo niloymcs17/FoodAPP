@@ -13,7 +13,7 @@ const SearchItem = () => {
     const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
     const [foodItem, setFoodItem] = useState<Item[]>([]);
     const route = useRoute();
-    const { title } = route.params;
+    const { title } = route.params ;
 
     useEffect(() => {
         if (title) {
@@ -39,7 +39,7 @@ const SearchItem = () => {
             <View style={styles.navBar}>
                 <Pressable
                     style={styles.back}
-                    onPress={() => navigation.navigate("HomeScreen")}
+                    onPress={() => navigation.goBack()}
                 >
                     <Image
                         style={styles.icon}
