@@ -1,31 +1,38 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { FontSize, Color, Padding } from "../GlobalStyles";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { updateCartItem } from "../store/cartSlice";
 import { Item } from "../Const/Items.const";
+import { RootState } from "../store/store";
 
 interface ItemsProps {
-  item: Item & { quantity?: string }; // Quantity is optional
+  item: Item & { quantity?: number }; // Quantity is optional
 }
 
-const Items = ({ item }: ItemsProps) => {
-  console.log(item)
-  const [quantity, setQuantity] = useState(Number(item.quantity) || 0); // Initial quantity set to 0
+const Items = React.memo(({ item }: ItemsProps) => {
   const dispatch = useDispatch();
+  const cartItem = useSelector((state: RootState) => state.cart.items[item.id]);
+  const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
 
-  const incrementQuantity = () => {
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(cartItem.quantity);
+    }
+  }, [cartItem]);
+
+  const incrementQuantity = useCallback(() => {
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
     dispatch(updateCartItem({ item, quantity: newQuantity }));
-  };
+  }, [quantity, dispatch, item]);
 
-  const decrementQuantity = () => {
+  const decrementQuantity = useCallback(() => {
     const newQuantity = quantity > 0 ? quantity - 1 : 0;
     setQuantity(newQuantity);
     dispatch(updateCartItem({ item, quantity: newQuantity }));
-  };
+  }, [quantity, dispatch, item]);
 
   const styles = useMemo(
     () =>
@@ -34,30 +41,17 @@ const Items = ({ item }: ItemsProps) => {
           height: 30,
           width: 30,
           borderRadius: 15,
-          fontSize: 18,
           backgroundColor: Color.mainColor,
           justifyContent: 'center',
           alignItems: 'center',
           color: Color.colorWhite,
           textAlign: 'center',
-          lineHeight: 30, // Ensures the text is vertically centered
         },
         quantity: {
-          flexDirection: "row", // Ensures horizontal alignment
-          justifyContent: "space-between", // Adds space between items
-          alignItems: "center", // Aligns items vertically centered
-          width: 100,
-        },
-        itemsFlexBox: {
-          alignItems: "center",
           flexDirection: "row",
-        },
-        redNHotTypo: {
-          width: "auto",
-          textAlign: "left",
-          fontSize: FontSize.size_lg,
-          color: Color.colorBlack,
-          fontWeight: "600",
+          justifyContent: "space-between",
+          alignItems: "center",
+          width: 100,
         },
         label: {
           fontSize: FontSize.size_mid,
@@ -66,9 +60,9 @@ const Items = ({ item }: ItemsProps) => {
         },
         foodimage: {
           height: 82,
-          width: 82, // Ensures the image is square
-          borderRadius: 41, // Makes the image circular
-          overflow: 'hidden', // Ensures the image is clipped to the border radius
+          width: 82,
+          borderRadius: 41,
+          overflow: 'hidden',
         },
         itemprice: {
           color: Color.mainColor,
@@ -89,18 +83,17 @@ const Items = ({ item }: ItemsProps) => {
           flexDirection: "row",
           paddingHorizontal: Padding.p_8xs,
           paddingVertical: Padding.p_3xs,
-          zIndex: 1,
           marginTop: 20,
           backgroundColor: Color.colorWhite,
           borderRadius: 10,
-          elevation: 3, // Android shadow
-          shadowColor: "#000", // iOS shadow
-          shadowOffset: { width: 0, height: 2 }, // iOS shadow
-          shadowOpacity: 0.25, // iOS shadow
-          shadowRadius: 3.84, // iOS shadow
+          elevation: 3,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
         },
       }),
-    [quantity]
+    []
   );
 
   return (
@@ -129,6 +122,6 @@ const Items = ({ item }: ItemsProps) => {
       </View>
     </View>
   );
-};
+});
 
 export default Items;
