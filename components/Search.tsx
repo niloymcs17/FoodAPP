@@ -35,6 +35,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <View style={styles.container}>
       <Searchbar
+      theme={{ colors: { primary: Color.mainColor} }}
         placeholder="Search item"
         placeholderTextColor={Color.colorGray_200}
         value={text}
@@ -57,6 +58,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    elevation:10,
     fontSize: FontSize.size_mid,
     color: Color.colorBlack,
     backgroundColor: Color.colorWhite, // Ensure the background color matches the container

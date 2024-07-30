@@ -14,6 +14,7 @@ import PaymentScreen from "./screens/PaymentScreen";
 import { SCREEN_NAME } from "./Const/ScreenName.const";
 import { selectCartItemsCount } from "./store/cartSlice";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import CatagoryScreen from "./screens/CatagoryScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,6 +37,8 @@ const TabNavigator = () => {
           iconName = focused ? "fast-food" : "fast-food-outline";
         } else if (route.name === SCREEN_NAME.CART) {
           iconName = focused ? "cart" : "cart-outline";
+        } else if (route.name === SCREEN_NAME.CATAGORY) {
+          iconName = focused ? "apps" : "apps-outline";
         }
 
         return <Ionicons name={iconName} size={size} color={color} />;
@@ -45,6 +48,7 @@ const TabNavigator = () => {
     })}
   >
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.HOME} component={HomeScreen} />
+    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.CATAGORY} component={CatagoryScreen} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.ORDER} component={MyOrders} />
     <Tab.Screen options={{ headerShown: false, tabBarBadge: itemCount }} name={SCREEN_NAME.CART} component={CartScreen} />
   </Tab.Navigator>)

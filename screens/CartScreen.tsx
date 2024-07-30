@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Pressable } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store"; // Adjust based on your store setup
 import Items from "../components/Items";
@@ -39,9 +39,9 @@ const CartScreen = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
       />
-      <TouchableOpacity style={styles.button} onPress={handlePress}>
+      <Pressable style={styles.button} onPress={handlePress}>
         <Text style={styles.buttonText}>Total: ₹{totalPrice.toFixed(2)}</Text>
-      </TouchableOpacity>
+      </Pressable>
     </SafeAreaView>
   );
 };

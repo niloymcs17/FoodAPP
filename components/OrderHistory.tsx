@@ -1,142 +1,123 @@
-import * as React from "react";
-import { StyleSheet, View, Text } from "react-native";
-import { Image } from "expo-image";
-import { FontSize, Color } from "../GlobalStyles";
+// src/components/Timeline.js
 
-const OrderHistory = () => {
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { Card, Button } from 'react-native-paper';
+import { ORDER, Order } from '../Const/Order.const';
+import { CURRENCY } from '../GlobalStyles';
+
+const OrderHistory = ({ data }: Order[] = ORDER) => {
+
   return (
-    <View style={[styles.rectangleParent, styles.groupChildLayout]}>
-      
-      <View style={styles.jimmyJohnsParent}>
-        <Text
-          style={[styles.jimmyJohns, styles.textTypo]}
-        >{`Jimmy John’s `}</Text>
-        <Image
-          style={styles.groupItem}
-          contentFit="cover"
-          source={require("../assets/profile.png")}
-        />
-      </View>
-      <Text style={[styles.jun1030, styles.itemsTypo]}>20 Jun, 10:30</Text>
-      <Text style={[styles.items, styles.itemsTypo]}>3 Items</Text>
-      <Text style={[styles.text, styles.textTypo]}>$17.10</Text>
-      <View style={[styles.orderDeliveredParent, styles.orderLayout]}>
-        <Text style={[styles.orderDelivered, styles.orderLayout]}>
-          Order Delivered
-        </Text>
-        <Image
-          style={styles.groupInner}
-          contentFit="cover"
-          source={require("../assets/ellipse-109.png")}
-        />
-      </View>
-    </View>
+
+    <ScrollView contentContainerStyle={styles.container}>
+      {data.map((order: any, index: number) => (
+        <Card key={index} style={styles.card}>
+          <View style={styles.header}>
+            <Text style={styles.orderId}>#{order.id}</Text>
+            <Text style={styles.date}>{order.date}</Text>
+          </View>
+          <View style={styles.items}>
+            <Text style={styles.itemsHeader}>Items - {order.items.length}</Text>
+            {order.items.map((item: any, index: number) => (
+              <View key={index} style={styles.item}>
+                <Text>{item.quantity} X {item.name}</Text>
+                <Text >{CURRENCY.INR}{item.price.toFixed(2)}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.instruction}>
+            <Text style={styles.instructionHeader}>Order Instruction</Text>
+            <Text>{order.instruction}</Text>
+          </View>
+          <View style={styles.item}>
+            <Text>Total: </Text>
+            <Text style={styles.totalAmount}> {CURRENCY.INR}{order.total}</Text>
+          </View>
+          <View style={styles.item}>
+            <Text>Payment Method: </Text>
+            <Text >{order.paymentMethod}</Text>
+          </View>
+          <View style={styles.footer}>
+            <View style={styles.total}>
+
+              <Text></Text>
+            </View>
+          </View>
+        </Card>
+      ))}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  groupChildLayout: {
-    height: 168,
-    width: 323,
+  container: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    padding: 16,
   },
-  groupChildPosition: {
-    top: 0,
-    left: 0,
+  card: {
+    marginBottom: 10,
+
+    padding: 16,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    elevation: 4,
   },
-  textTypo: {
-    textAlign: "right",
-    fontSize: FontSize.size_base,
-    position: "absolute",
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
-  itemsTypo: {
-    textAlign: "left",
-    fontSize: FontSize.size_xs,
+  orderId: {
+    fontWeight: 'bold',
+    color: '#333',
   },
-  orderLayout: {
-    height: 9,
-    position: "absolute",
+  date: {
+    color: '#999',
   },
-  groupChild: {
-    shadowColor: "rgba(211, 209, 216, 0.25)",
-    shadowOffset: {
-      width: 18.21428680419922,
-      height: 18.21428680419922,
-    },
-    shadowRadius: 36.43,
-    elevation: 36.43,
-    shadowOpacity: 1,
-    borderRadius: 18,
-    backgroundColor: Color.colorWhite,
-    left: 0,
-    position: "absolute",
-    height: 168,
-    width: 323,
-  },
-  jimmyJohns: {
-    fontWeight: "600",
-    color: Color.colorBlack,
-    left: 0,
-    top: 0,
-  },
-  groupItem: {
-    top: 4,
-    left: 96,
-    width: 8,
-    height: 8,
-    position: "absolute",
-  },
-  jimmyJohnsParent: {
-    top: 47,
-    width: 104,
-    height: 16,
-    left: 100,
-    position: "absolute",
-  },
-  jun1030: {
-    color: Color.colorDarkgray_100,
-    top: 25,
-    textAlign: "left",
-    fontSize: FontSize.size_xs,
-    position: "absolute",
-    left: 100,
+  customerName: {
+    fontWeight: 'bold',
+    color: '#e74c3c',
+    marginBottom: 16,
   },
   items: {
-    left: 190,
-    color: Color.colorDarkgray_100,
-    top: 25,
-    textAlign: "left",
-    fontSize: FontSize.size_xs,
-    position: "absolute",
+    marginBottom: 16,
   },
-  text: {
-    top: 23,
-    left: 263,
-    color: Color.mainColor,
+  itemsHeader: {
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
-  orderDelivered: {
-    left: 13,
-    color: Color.colorMediumspringgreen,
-    width: 89,
-    textAlign: "left",
-    fontSize: FontSize.size_xs,
-    height: 9,
-    top: 0,
+  item: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
-  groupInner: {
-    top: 1,
-    width: 7,
-    height: 7,
-    left: 0,
-    position: "absolute",
+  itemDetail: {
+    marginLeft: 16,
+    color: '#999',
   },
-  orderDeliveredParent: {
-    top: 73,
-    width: 102,
-    left: 100,
+  instruction: {
+    marginBottom: 16,
   },
-  rectangleParent: {
-    marginTop: 15,
+  instructionHeader: {
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  total: {
+    alignItems: 'flex-end',
+  },
+  totalAmount: {
+    fontWeight: 'bold',
+    color: '#e74c3c',
+  },
+
+
 });
 
 export default OrderHistory;

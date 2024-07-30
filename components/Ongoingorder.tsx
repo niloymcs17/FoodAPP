@@ -4,9 +4,9 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { ORDER, Order } from '../Const/Order.const';
+import { CURRENCY } from '../GlobalStyles';
 
 const Ongoingorder = ({data}:Order[] = ORDER) => {
-  const INR = "₹"
 
   return (
 
@@ -22,7 +22,7 @@ const Ongoingorder = ({data}:Order[] = ORDER) => {
           {order.items.map((item:any, index:number) => (
             <View key={index} style={styles.item}>
               <Text>{item.quantity} X {item.name}</Text>
-              <Text >{INR}{item.price.toFixed(2)}</Text>
+              <Text >{CURRENCY.INR}{item.price.toFixed(2)}</Text>
             </View>
           ))}
         </View>
@@ -32,7 +32,7 @@ const Ongoingorder = ({data}:Order[] = ORDER) => {
         </View>
         <View style={styles.item}>
               <Text>Total: </Text>
-              <Text style={styles.totalAmount}> {INR}{order.total}</Text>
+              <Text style={styles.totalAmount}> {CURRENCY.INR}{order.total}</Text>
             </View>
             <View  style={styles.item}>
               <Text>Payment Method: </Text>

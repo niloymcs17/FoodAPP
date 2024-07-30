@@ -48,3 +48,7 @@ export const Border = {
   br_lg_2: 18,
   br_31xl: 50,
 };
+
+export const CURRENCY ={
+  INR:"₹"
+}

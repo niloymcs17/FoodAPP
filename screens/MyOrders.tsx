@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const MyOrders = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const [activeTab, setActiveTab] = useState('Ongoing');
-  const ongoingOrder = ORDER.filter((item:any)=> item.status !== 'delivered');
+  const ongoingOrder = ORDER.filter((item:any)=> item.status !== 'delivered') || [];
   const pastOrder = ORDER.filter((item:any)=> item.status == 'delivered');
 
   return (
@@ -48,7 +48,7 @@ const MyOrders = () => {
           </Text>
         </Pressable>
       </View>
-      {activeTab === 'Ongoing' ? <Ongoingorder  data={ongoingOrder} /> : <OrderHistory />}
+      {activeTab === 'Ongoing' ? <Ongoingorder  data={ongoingOrder} /> : <OrderHistory data={pastOrder} />}
     </SafeAreaView>
   );
 };

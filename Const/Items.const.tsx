@@ -4660,7 +4660,7 @@ export const ITEM: Item[] = [
         "price": "160",
         "label": "MAYER BARIR NIRAMISH MOHA BHOJ মায়ের বাড়ির নিরামিষ মহা ভোজ - বাসমতি চালের ভাত , ডাল, আলু ভাজা,  ২ রকমের সব্জি সাথে স্যালাড, চাটনি, পাঁপড় ও দই সাথে ১ পিস্ সন্দেশ",
         "type": "Simple Product",
-        "image": require("../assets/items/_MAYER BARIR NIRAMISH MOHA BHOJ মায়ের বাড়ির নিরামিষ মহা ভোজ - বাঁশকাঠি চালের ভাত 98084 ডাল98084 ২ রকমের সব্জি সাথে স্যালাড98084 চাটনি98084 পাঁপড় ও দই 38507.jpg"),
+        "image": require("../assets/items/_MAYER BARIR NIRAMISH MOHA BHOJ.jpg"),
         "showItem": true,
         "itemUnavailable": false,
         "catagory": "THALI"

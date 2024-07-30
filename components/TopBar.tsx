@@ -10,8 +10,8 @@ const TopBar = () => {
 
   return (
     <View style={styles.topBar}>
-      <Pressable onPress={() => navigation.navigate('SideMenu')}>
-        <Image style={styles.menuIcon} contentFit="cover" source={require('../assets/menu.png')} />
+      <Pressable onPress={() => navigation.goBack()}>
+        <Image style={styles.menuIcon} contentFit="cover" source={require('../assets/back.png')} />
       </Pressable>
 
       <Pressable onPress={() => navigation.navigate('AddNewAddress')} style={styles.addressContainer}>
