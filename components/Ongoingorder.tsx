@@ -12,7 +12,7 @@ const Ongoingorder = ({data}:Order[] = ORDER) => {
 
     <ScrollView contentContainerStyle={styles.container}>
        {data.map((order:any, index:number) => (
-      <Card style={styles.card}>
+      <Card key={index} style={styles.card}>
         <View style={styles.header}>
           <Text style={styles.orderId}>#{order.id}</Text>
           <Text style={styles.date}>{order.date}</Text>

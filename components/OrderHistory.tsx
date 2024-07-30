@@ -14,7 +14,7 @@ const OrderHistory = () => {
         <Image
           style={styles.groupItem}
           contentFit="cover"
-          source={require("../assets/group-178011.png")}
+          source={require("../assets/profile.png")}
         />
       </View>
       <Text style={[styles.jun1030, styles.itemsTypo]}>20 Jun, 10:30</Text>

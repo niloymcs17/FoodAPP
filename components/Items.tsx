@@ -1,19 +1,28 @@
 import React, { useMemo, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View, ImageSourcePropType, TouchableOpacity } from "react-native";
-import {  FontSize, Color, Padding } from "../GlobalStyles";
+import { FontSize, Color, Padding } from "../GlobalStyles";
+import { useDispatch } from "react-redux";
+import { updateCartItem } from "../store/cartSlice";
+import { Item } from "../Const/Items.const";
 
-export type ItemsType = {
-  maskGroup?: ImageSourcePropType;
-  label: string;
-  price: string;
-};
+interface ItemsProps {
+  item: Item;
+}
 
-const Items = ({ maskGroup, label, price  }: ItemsType) => {
+
+const Items = ({item}:ItemsProps) => {
   const [quantity, setQuantity] = useState(0); // Initial quantity set to 0
+  const dispatch = useDispatch();
+  const incrementQuantity = () => {
+    setQuantity(quantity + 1);
+    dispatch(updateCartItem( {item , quantity} ))
+  }
+  const decrementQuantity = () => {
+    setQuantity(quantity > 0 ? quantity - 1 : 0);
+    dispatch(updateCartItem( {item , quantity} ))
 
-  const incrementQuantity = () => setQuantity(quantity + 1);
-  const decrementQuantity = () => setQuantity(quantity > 0 ? quantity - 1 : 0);
+  }
 
   const styles = useMemo(
     () =>
@@ -43,7 +52,7 @@ const Items = ({ maskGroup, label, price  }: ItemsType) => {
         redNHotTypo: {
           width: "auto",
           textAlign: "left",
-                fontSize: FontSize.size_lg,
+          fontSize: FontSize.size_lg,
           color: Color.colorBlack,
           fontWeight: "600",
         },
@@ -96,14 +105,14 @@ const Items = ({ maskGroup, label, price  }: ItemsType) => {
       <Image
         style={styles.foodimage}
         contentFit="scale-down"
-        source={maskGroup}
+        source={item.image}
       />
       <View style={styles.groupParent}>
         <View>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.label}>{item.label}</Text>
         </View>
         <View style={styles.itempriceParent}>
-          <Text style={styles.itemprice}>₹{price}</Text>
+          <Text style={styles.itemprice}>₹{item.price}</Text>
           <View style={styles.quantity}>
             <TouchableOpacity onPress={decrementQuantity}>
               <Text style={styles.button}>-</Text>

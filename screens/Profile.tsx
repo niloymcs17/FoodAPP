@@ -17,7 +17,7 @@ const Profile = () => {
         <Image
           style={styles.icon}
           contentFit="cover"
-          source={require("../assets/group-180711.png")}
+          source={require("../assets/back.png")}
         />
       </Pressable>
       <View style={styles.header}>

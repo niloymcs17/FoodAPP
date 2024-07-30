@@ -11,7 +11,8 @@ import { ORDER } from "../Const/Order.const";
 const MyOrders = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const [activeTab, setActiveTab] = useState('Ongoing');
-  const order = ORDER;
+  const ongoingOrder = ORDER.filter((item:any)=> item.status !== 'delivered');
+  const pastOrder = ORDER.filter((item:any)=> item.status == 'delivered');
 
   return (
     <View style={styles.myOrdersContainer}>
@@ -46,7 +47,7 @@ const MyOrders = () => {
           </Text>
         </Pressable>
       </View>
-      {activeTab === 'Ongoing' ? <Ongoingorder  data={order} /> : <OrderHistory />}
+      {activeTab === 'Ongoing' ? <Ongoingorder  data={ongoingOrder} /> : <OrderHistory />}
     </View>
   );
 };

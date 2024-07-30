@@ -19,7 +19,7 @@ const TopBar = () => {
         <Text style={styles.prettyViewLane}>{'4102 Pretty View Lane'}</Text>
       </Pressable>
 
-      <Image style={styles.vectorIcon} contentFit="cover" source={require('../assets/vector.png')} />
+      <Image style={styles.vectorIcon} contentFit="cover" source={require('../assets/profile.png')} />
     </View>
   );
 };

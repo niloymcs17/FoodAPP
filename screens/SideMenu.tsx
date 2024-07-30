@@ -43,7 +43,7 @@ const SideMenu = () => {
   return (
     <View style={styles.sideMenu}>
       <View style={styles.header}>
-        <Image style={styles.profileIcon} contentFit="cover" source={require("../assets/frame.png")} />
+        <Image style={styles.profileIcon} contentFit="cover" source={require("../assets/profile.png")} />
         <View style={styles.userInfo}>
           <Text style={styles.userName}>Farion Wick</Text>
           <Text style={styles.userEmail}>farionwick@gmail.com</Text>

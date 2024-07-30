@@ -45,7 +45,7 @@ export const ORDER:Order[] = [
         id: '5214689',
         date: 'Dec 05, 2021 3:58 PM',
         customerName: 'Martin White',
-        status: "delivered",
+        status: "Cooking",
         items: [
           {
             name: 'Vanilla Cappuccino',
@@ -71,7 +71,7 @@ export const ORDER:Order[] = [
         id: '5214689',
         date: 'Dec 05, 2021 3:58 PM',
         customerName: 'Martin White',
-        status: "delivered",
+        status: "Ordered",
         items: [
           {
             name: 'Vanilla Cappuccino',

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TextInput } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import debounce from 'lodash.debounce'; // Import debounce from lodash
-import { Color,  FontSize } from '../GlobalStyles';
+import { Color, FontSize } from '../GlobalStyles';
+import { Searchbar } from 'react-native-paper';
 
 // Define prop types
 type SearchBarProps = {
@@ -11,7 +12,7 @@ type SearchBarProps = {
 };
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  editable = false,
+  editable = true, // Default to true to be consistent with Searchbar
   onChangeText,
 }) => {
   const [text, setText] = useState('');
@@ -21,7 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     if (onChangeText) {
       onChangeText(newText);
     }
-  }, 1000); // Debounce delay of 2 seconds
+  }, 1000); // Debounce delay of 1 second
 
   useEffect(() => {
     debouncedOnChange(text);
@@ -33,14 +34,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <View style={styles.container}>
-      <FontAwesome name="search" style={styles.icon} />
-      <TextInput
-        style={styles.input}
+      <Searchbar
         placeholder="Search item"
         placeholderTextColor={Color.colorGray_200}
         value={text}
         onChangeText={handleChange}
         editable={editable} // Control editability with prop
+        style={styles.input}
       />
     </View>
   );
@@ -50,24 +50,16 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Color.colorWhite,
-    borderRadius: 10,
-    paddingHorizontal: 10,
     height: 40,
-    borderColor: Color.colorGray_200,
-    borderWidth: 1,
-    width: "100%", // Take full width minus padding
-  },
-  icon: {
-    fontSize: 20,
-    color: Color.colorGray_200,
-    marginRight: 10,
+    marginTop:10,
+    marginBottom:10,
+    width: '100%', // Take full width minus padding
   },
   input: {
     flex: 1,
     fontSize: FontSize.size_mid,
     color: Color.colorBlack,
-    borderBlockColor:Color.colorWhite
+    backgroundColor: Color.colorWhite, // Ensure the background color matches the container
   },
 });
 
