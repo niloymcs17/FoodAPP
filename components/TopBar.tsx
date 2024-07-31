@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation, ParamListBase } from '@react-navigation/native';
-import {  FontSize, Color, Padding } from '../GlobalStyles';
+import { FontSize, Color, Padding } from '../GlobalStyles';
+import ModalComponent from '../modals/ModalComponent';
 
-const TopBar = () => {
+const TopBar: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+  const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [selectedDetails, setSelectedDetails] = useState<{ serviceType: string | null }>({
+    serviceType: null
+  });
+
+  const handleAddressPress = () => {
+    setModalVisible(true);
+  };
+
+  const handleModalClose = (data: { serviceType: string | null}) => {
+    setSelectedDetails(data);
+    setModalVisible(false);
+  };
 
   return (
     <View style={styles.topBar}>
@@ -14,12 +28,14 @@ const TopBar = () => {
         <Image style={styles.menuIcon} contentFit="cover" source={require('../assets/back.png')} />
       </Pressable>
 
-      <Pressable onPress={() => navigation.navigate('AddNewAddress')} style={styles.addressContainer}>
+      <Pressable onPress={handleAddressPress} style={styles.addressContainer}>
         <Text style={styles.deliverTo}>{'Deliver to'}</Text>
         <Text style={styles.prettyViewLane}>{'4102 Pretty View Lane'}</Text>
       </Pressable>
 
       <Image style={styles.vectorIcon} contentFit="cover" source={require('../assets/profile.png')} />
+      
+      <ModalComponent isVisible={isModalVisible} onClose={handleModalClose} />
     </View>
   );
 };

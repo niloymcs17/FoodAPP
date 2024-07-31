@@ -1,22 +1,19 @@
+// cartSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Item } from '../Const/Items.const';
-import { RootState } from './store';
+import { RootState } from './types'; // Import from types.ts
 
 interface CartItem extends Item {
   quantity: number;
 }
 
-interface CartState {
-  items: { [id: string]: CartItem }; // Use plain object instead of Map
+export interface CartState {
+  items: { [id: string]: CartItem };
 }
 
 const initialState: CartState = {
   items: {},
 };
-
-interface RootState {
-  cart: CartState;
-}
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -28,17 +25,14 @@ const cartSlice = createSlice({
       
       if (action.payload.quantity > 0) {
         if (existingItem) {
-          // Update the quantity of the existing item
           existingItem.quantity = action.payload.quantity;
         } else {
-          // Add a new item to the cart with the specified quantity
           state.items[id] = {
             ...action.payload.item,
             quantity: action.payload.quantity,
           };
         }
       } else {
-        // Remove the item from the cart if quantity is zero or less
         if (existingItem) {
           delete state.items[id];
         }
@@ -51,9 +45,10 @@ const cartSlice = createSlice({
 });
 
 export const { updateCartItem, clearCart } = cartSlice.actions;
-// Selector to get total count of items in the cart
+
 export const selectCartItemsCount = (state: RootState) => {
   const cartItems = Object.values(state.cart.items);
   return cartItems.length;
 };
+
 export default cartSlice.reducer;

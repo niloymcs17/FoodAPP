@@ -8,12 +8,11 @@ import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { SCREEN_NAME } from "../Const/ScreenName.const";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { selectCartItems } from "../store/selectors";
 
 const CartScreen = () => {
   // Retrieve cart items from Redux store and convert object to array
-  const cartItems = useSelector((state: RootState) =>
-    Object.values(state.cart.items)
-  );
+  const cartItems = useSelector(selectCartItems);
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   
   // Calculate total price
