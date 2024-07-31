@@ -49,7 +49,6 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={{flex:1}}>
-      <Background style={styles.homeScreen}>
       <TopBar />
         <View style={styles.homeScreen}>
           <Pressable style={styles.searchBar} onPress={() => handlePress('')}>
@@ -70,7 +69,6 @@ const HomeScreen = () => {
             </Swiper>
           </View>
         </View>
-      </Background>
     </SafeAreaView>
   );
 };
@@ -79,8 +77,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%', // Take full width minus padding
-    marginBottom: 10,
+    width: '90%', // Take full width minus padding
   },
   homeScreen: {
     width: '100%',
@@ -88,8 +85,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   wrapper: {
-    height: 350,
-    marginVertical: 10,
+    height: viewportWidth * 0.8,
+    marginVertical: 5,
   },
   carouselItem: {
     justifyContent: 'center',
@@ -97,8 +94,8 @@ const styles = StyleSheet.create({
   },
   carouselImage: {
     width: viewportWidth * 0.8,
-    height: "90%",
-    resizeMode: 'cover',
+    height: viewportWidth * 0.8,
+    resizeMode: "contain",
     borderRadius: 10,
   },
   carouselText: {

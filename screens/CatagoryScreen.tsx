@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   itemContainer: {
-    width: 250,
+    width: 300,
     height: 100,
     margin: 10,
     justifyContent: "flex-start",
@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
     flexDirection: "row"
   },
   itemTitle: {
+    width: 220,
     fontSize: 14,
     fontWeight: '500',
     color: Color.colorBlack,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, FlatList } from "react-native";
+import { StyleSheet, FlatList, View } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import Items from "../components/Items";
 import { FontSize, Color } from "../GlobalStyles";
@@ -36,23 +36,41 @@ const SearchItem = () => {
 
     return (
         <SafeAreaView style={styles.searchItem}>
-            <Background>
             <TopBar />
+            <View style={styles.searchBarContainer}>
                 <SearchBar
                     editable={true}
                     onChangeText={handleSearchTextChange}
                 />
+            </View>
+            <View style={styles.flatListContainer}>
                 <FlatList
                     data={foodItem}
                     renderItem={({ item }) => <Items item={item} />}
                     keyExtractor={item => item.id}
                 />
-            </Background>
-        </SafeAreaView >
+            </View>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    searchBarContainer: {
+        marginHorizontal: 20,
+        marginBottom: 10,
+    },
+    flatListContainer: {
+        marginHorizontal: 20,
+        flex: 1,
+        width:"90%"
+    },
+    searchItem: {
+        backgroundColor: Color.colorWhite,
+        flex: 1,
+        overflow: "hidden",
+        width: "100%",
+        alignItems: 'center', // Center the content horizontally
+    },
     search: {
         fontSize: FontSize.size_lg,
         fontWeight: "500",
@@ -64,12 +82,6 @@ const styles = StyleSheet.create({
             height: 4,
         },
         textShadowRadius: 4,
-    },
-    searchItem: {
-        backgroundColor: Color.colorWhite,
-        flex: 1,
-        overflow: "hidden",
-        width: "100%",
     },
 });
 

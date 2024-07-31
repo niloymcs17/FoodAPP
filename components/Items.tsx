@@ -84,7 +84,7 @@ const Items = React.memo(({ item }: ItemsProps) => {
           paddingHorizontal: Padding.p_8xs,
           paddingVertical: Padding.p_3xs,
           margin: 5,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: Color.colorWhite,
           borderRadius: 10,
           elevation: 3,
           shadowColor: "#000",
