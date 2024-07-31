@@ -7,6 +7,7 @@ import { useNavigation, ParamListBase } from "@react-navigation/native";
 import SearchBar from '../components/Search';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Swiper from 'react-native-swiper';
+import Background from '../shared/Background';
 
 const { width: viewportWidth } = Dimensions.get('window');
 
@@ -34,7 +35,7 @@ const carouselItems = [
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_2.jpg",
     title: "HomeStays & Villas",
-  },{
+  }, {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/popup_image_banner_1.jpg",
     title: "HomeStays & Villas",
   },
@@ -47,28 +48,29 @@ const HomeScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.homeScreen}>
+    <SafeAreaView style={{flex:1}}>
+      <Background style={styles.homeScreen}>
       <TopBar />
-      <Pressable style={styles.searchBar} onPress={() => handlePress('')}>
-        <SearchBar editable={false} />
-      </Pressable>
-      <View style={styles.wrapper}>
+        <View style={styles.homeScreen}>
+          <Pressable style={styles.searchBar} onPress={() => handlePress('')}>
+            <SearchBar editable={false} />
+          </Pressable>
+          <View style={styles.wrapper}>
 
-        <Swiper
-         
-          showsButtons={false}
-          autoplay={true}
-          autoplayTimeout={3} // Adjust the timeout as needed
-        >
-          {carouselItems.map((item, index) => (
-            <View style={styles.carouselItem} key={index}>
-              <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
-              {/* <Text style={styles.carouselText}>{item.title}</Text> */}
-            </View>
-          ))}
-        </Swiper>
-      </View>
-
+            <Swiper
+              showsButtons={false}
+              autoplay={true}
+              autoplayTimeout={3} // Adjust the timeout as needed
+            >
+              {carouselItems.map((item, index) => (
+                <View style={styles.carouselItem} key={index}>
+                  <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
+                </View>
+              ))}
+            </Swiper>
+          </View>
+        </View>
+      </Background>
     </SafeAreaView>
   );
 };
@@ -78,13 +80,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%', // Take full width minus padding
-    marginVertical: 10,
+    marginBottom: 10,
   },
   homeScreen: {
-    backgroundColor: Color.colorWhite,
     width: '100%',
     alignItems: 'center',
-    paddingHorizontal: 10,
     flex: 1,
   },
   wrapper: {

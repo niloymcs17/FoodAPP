@@ -1,20 +1,19 @@
 import * as React from "react";
-import { Image } from "expo-image";
-import { StyleSheet, Pressable, Text, View, FlatList } from "react-native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation, ParamListBase, useRoute } from "@react-navigation/native";
+import { StyleSheet, FlatList } from "react-native";
+import { useRoute } from "@react-navigation/native";
 import Items from "../components/Items";
 import { FontSize, Color } from "../GlobalStyles";
 import SearchBar from "../components/Search";
 import { useState, useEffect } from "react";
 import { ITEM, Item } from "../Const/Items.const";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Background from "../shared/Background";
+import TopBar from "../components/TopBar";
 
 const SearchItem = () => {
-    const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
     const [foodItem, setFoodItem] = useState<Item[]>([]);
     const route = useRoute();
-    const { title } = route.params ;
+    const { title } = route.params;
 
     useEffect(() => {
         if (title) {
@@ -36,47 +35,24 @@ const SearchItem = () => {
     };
 
     return (
-        <SafeAreaView  style={styles.searchItem}>
-            <View style={styles.navBar}>
-                <Pressable
-                    style={styles.back}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Image
-                        style={styles.icon}
-                        contentFit="cover"
-                        source={require("../assets/back.png")}
-                    />
-                </Pressable>
-                <Text style={styles.search}>Search</Text>
-                <Image
-                    style={styles.vectorIcon}
-                    contentFit="cover"
-                    source={require("../assets/profile.png")}
+        <SafeAreaView style={styles.searchItem}>
+            <Background>
+            <TopBar />
+                <SearchBar
+                    editable={true}
+                    onChangeText={handleSearchTextChange}
                 />
-            </View>
-            <SearchBar
-                editable={true}
-                onChangeText={handleSearchTextChange}
-            />
-            <FlatList
-                data={foodItem}
-                renderItem={({ item }) => <Items item={item} />}
-                keyExtractor={item => item.id}
-            />
+                <FlatList
+                    data={foodItem}
+                    renderItem={({ item }) => <Items item={item} />}
+                    keyExtractor={item => item.id}
+                />
+            </Background>
         </SafeAreaView >
     );
 };
 
 const styles = StyleSheet.create({
-    icon: {
-        height: "100%",
-        width: "100%",
-    },
-    back: {
-        width: 38,
-        height: 38,
-    },
     search: {
         fontSize: FontSize.size_lg,
         fontWeight: "500",
@@ -89,23 +65,10 @@ const styles = StyleSheet.create({
         },
         textShadowRadius: 4,
     },
-    vectorIcon: {
-        width: 59,
-        height: 57,
-    },
-    navBar: {
-        alignSelf: "stretch",
-        height: 46,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 10, // Adding margin for better spacing
-    },
     searchItem: {
         backgroundColor: Color.colorWhite,
         flex: 1,
         overflow: "hidden",
-        padding: 14,
         width: "100%",
     },
 });

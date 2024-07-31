@@ -5,6 +5,6 @@ export const SCREEN_NAME = {
     CART: 'Cart',
     SEARCH_ITEM: 'SearchItem',
     PAYMENT: 'Payment',
-    CATAGORY:"catagory"
+    CATAGORY:"Catagory"
   };
   
