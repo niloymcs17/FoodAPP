@@ -4,17 +4,17 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store"; // Adjust based on your store setup
 import Items from "../components/Items";
 import { FontSize, Color, Padding } from "../GlobalStyles";
-import { useNavigation } from '@react-navigation/native';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { SCREEN_NAME } from "../Const/ScreenName.const";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 const CartScreen = () => {
   // Retrieve cart items from Redux store and convert object to array
   const cartItems = useSelector((state: RootState) =>
     Object.values(state.cart.items)
   );
-  const navigation = useNavigation();
-
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   
   // Calculate total price
   const totalPrice = cartItems.reduce(
@@ -22,7 +22,7 @@ const CartScreen = () => {
     0
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }:any) => (
     <Items item={item} /> // Pass the item with its quantity to the Items component
   );
 

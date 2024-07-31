@@ -13,7 +13,7 @@ import TopBar from "../components/TopBar";
 const SearchItem = () => {
     const [foodItem, setFoodItem] = useState<Item[]>([]);
     const route = useRoute();
-    const { title } = route.params;
+    const { title }:any = route.params;
 
     useEffect(() => {
         if (title) {

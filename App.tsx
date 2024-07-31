@@ -15,6 +15,7 @@ import { SCREEN_NAME } from "./Const/ScreenName.const";
 import { selectCartItemsCount } from "./store/cartSlice";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import CatagoryScreen from "./screens/CatagoryScreen";
+import SideMenu from "./screens/SideMenu";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,8 +34,8 @@ const TabNavigator = () => {
 
         if (route.name === SCREEN_NAME.HOME) {
           iconName = focused ? "home" : "home-outline";
-        } else if (route.name === SCREEN_NAME.ORDER) {
-          iconName = focused ? "fast-food" : "fast-food-outline";
+        } else if (route.name === SCREEN_NAME.PROFILE) {
+          iconName = focused ? "person" : "person-outline";
         } else if (route.name === SCREEN_NAME.CART) {
           iconName = focused ? "cart" : "cart-outline";
         } else if (route.name === SCREEN_NAME.CATAGORY) {
@@ -47,9 +48,9 @@ const TabNavigator = () => {
       tabBarInactiveTintColor: "gray",
     })}
   >
+    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.PROFILE} component={SideMenu} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.HOME} component={HomeScreen} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.CATAGORY} component={CatagoryScreen} />
-    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.ORDER} component={MyOrders} />
     <Tab.Screen options={{ headerShown: false, tabBarBadge: itemCount }} name={SCREEN_NAME.CART} component={CartScreen} />
   </Tab.Navigator>)
 };
@@ -58,6 +59,7 @@ const MainStackNavigator = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Tabs" component={TabNavigator} />
     <Stack.Screen name={SCREEN_NAME.SEARCH_ITEM} component={SearchItem} />
+    <Stack.Screen name={SCREEN_NAME.ORDER} component={MyOrders} />
     <Stack.Screen name={SCREEN_NAME.PAYMENT} component={PaymentScreen} />
   </Stack.Navigator>
 );
