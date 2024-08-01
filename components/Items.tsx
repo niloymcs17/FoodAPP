@@ -40,7 +40,7 @@ const Items = React.memo(({ item }: ItemsProps) => {
         button: {
           height: 30,
           width: 30,
-          borderRadius: 15,
+          borderRadius: 5,
           backgroundColor: Color.mainColor,
           justifyContent: 'center',
           alignItems: 'center',
@@ -67,6 +67,7 @@ const Items = React.memo(({ item }: ItemsProps) => {
         itemprice: {
           color: Color.mainColor,
           width: 49,
+          fontSize:20
         },
         itempriceParent: {
           flexDirection: "row",
@@ -92,6 +93,10 @@ const Items = React.memo(({ item }: ItemsProps) => {
           shadowOpacity: 0.25,
           shadowRadius: 3.84,
         },
+        text:{
+          fontSize:20,
+          color:Color.colorWhite,
+        }
       }),
     []
   );
@@ -111,11 +116,11 @@ const Items = React.memo(({ item }: ItemsProps) => {
           <Text style={styles.itemprice}>₹{item.price}</Text>
           <View style={styles.quantity}>
             <Pressable onPress={decrementQuantity} style={styles.button}>
-              <Text>-</Text>
+              <Text style={styles.text}>-</Text>
             </Pressable>
             <Text style={styles.label}>{quantity < 10 ? `0${quantity}` : quantity}</Text>
             <Pressable onPress={incrementQuantity} style={styles.button}>
-              <Text>+</Text>
+              <Text style={styles.text}>+</Text>
             </Pressable>
           </View>
         </View>

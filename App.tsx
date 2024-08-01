@@ -48,9 +48,9 @@ const TabNavigator = () => {
       tabBarInactiveTintColor: "gray",
     })}
   >
-    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.PROFILE} component={SideMenu} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.HOME} component={HomeScreen} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.CATAGORY} component={CatagoryScreen} />
+    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.PROFILE} component={SideMenu} />
     <Tab.Screen options={{ headerShown: false, tabBarBadge: itemCount }} name={SCREEN_NAME.CART} component={CartScreen} />
   </Tab.Navigator>)
 };
