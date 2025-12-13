@@ -5,16 +5,24 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Provider, useSelector } from "react-redux";
 import { Ionicons } from '@expo/vector-icons';
 
+// Polyfill for setImmediate (needed for react-native-swiper on web)
+if (typeof setImmediate === 'undefined') {
+  (global as any).setImmediate = (fn: Function, ...args: any[]) => {
+    return setTimeout(fn, 0, ...args);
+  };
+  (global as any).clearImmediate = clearTimeout;
+}
+
 import { store } from "./store/store";
 import HomeScreen from "./screens/HomeScreen";
 import MyOrders from "./screens/MyOrders";
 import SearchItem from "./screens/SearchItem";
 import CartScreen from "./screens/CartScreen";
 import PaymentScreen from "./screens/PaymentScreen";
+import AddNewAddress from "./screens/AddNewAddress";
 import { SCREEN_NAME } from "./Const/ScreenName.const";
 import { selectCartItemsCount } from "./store/cartSlice";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import CatagoryScreen from "./screens/CatagoryScreen";
 import SideMenu from "./screens/SideMenu";
 
 const Stack = createNativeStackNavigator();
@@ -38,8 +46,6 @@ const TabNavigator = () => {
           iconName = focused ? "person" : "person-outline";
         } else if (route.name === SCREEN_NAME.CART) {
           iconName = focused ? "cart" : "cart-outline";
-        } else if (route.name === SCREEN_NAME.CATAGORY) {
-          iconName = focused ? "apps" : "apps-outline";
         }
 
         return <Ionicons name={iconName} size={size} color={color} />;
@@ -49,7 +55,6 @@ const TabNavigator = () => {
     })}
   >
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.HOME} component={HomeScreen} />
-    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.CATAGORY} component={CatagoryScreen} />
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.PROFILE} component={SideMenu} />
     <Tab.Screen options={{ headerShown: false, tabBarBadge: itemCount }} name={SCREEN_NAME.CART} component={CartScreen} />
   </Tab.Navigator>)
@@ -61,6 +66,7 @@ const MainStackNavigator = () => (
     <Stack.Screen name={SCREEN_NAME.SEARCH_ITEM} component={SearchItem} />
     <Stack.Screen name={SCREEN_NAME.ORDER} component={MyOrders} />
     <Stack.Screen name={SCREEN_NAME.PAYMENT} component={PaymentScreen} />
+    <Stack.Screen name="AddNewAddress" component={AddNewAddress} />
   </Stack.Navigator>
 );
 

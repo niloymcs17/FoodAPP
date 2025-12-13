@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, Pressable, View, Image, Dimensions } from 'react-native';
+import { Text, StyleSheet, Pressable, View, Image, Dimensions, ScrollView } from 'react-native';
 import TopBar from '../components/TopBar';
 import { Color } from '../GlobalStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -8,6 +8,9 @@ import SearchBar from '../components/Search';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Swiper from 'react-native-swiper';
 import Background from '../shared/Background';
+import { Image as ExpoImage } from 'expo-image';
+import { CATAGORY, Catagory } from '../Const/Catagory.const';
+import { Divider } from 'react-native-paper';
 
 const { width: viewportWidth } = Dimensions.get('window');
 
@@ -42,6 +45,7 @@ const carouselItems = [
 ];
 const HomeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+  const categories: Catagory[] = CATAGORY;
 
   const handlePress = (itemTitle: string) => {
     navigation.navigate('SearchItem', { title: itemTitle });
@@ -54,20 +58,39 @@ const HomeScreen = () => {
           <Pressable style={styles.searchBar} onPress={() => handlePress('')}>
             <SearchBar editable={false} />
           </Pressable>
-          <View style={styles.wrapper}>
-
-            <Swiper
-              showsButtons={false}
-              autoplay={true}
-              autoplayTimeout={3} // Adjust the timeout as needed
-            >
-              {carouselItems.map((item, index) => (
-                <View style={styles.carouselItem} key={index}>
-                  <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
-                </View>
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollViewContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.wrapper}>
+              <Swiper
+                showsButtons={false}
+                autoplay={true}
+                autoplayTimeout={3} // Adjust the timeout as needed
+              >
+                {carouselItems.map((item, index) => (
+                  <View style={styles.carouselItem} key={index}>
+                    <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
+                  </View>
+                ))}
+              </Swiper>
+            </View>
+            
+            <Text style={styles.categoryTitle}>{`What would you like to order?`}</Text>
+            
+            <View style={styles.categoryContainer}>
+              {categories.map((item, index) => (
+                <Pressable key={index} onPress={() => handlePress(item.title)}>
+                  <View style={styles.itemContainer}>
+                    <ExpoImage style={styles.itemImage} contentFit="cover" source={item.image} />
+                    <Text style={styles.itemTitle}>{item.title}</Text>
+                  </View>
+                  <Divider />
+                </Pressable>
               ))}
-            </Swiper>
-          </View>
+            </View>
+          </ScrollView>
         </View>
     </SafeAreaView>
   );
@@ -83,6 +106,14 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     flex: 1,
+  },
+  scrollView: {
+    width: '100%',
+    flex: 1,
+  },
+  scrollViewContent: {
+    alignItems: 'center',
+    paddingBottom: 20,
   },
   wrapper: {
     height: viewportWidth * 0.8,
@@ -101,6 +132,41 @@ const styles = StyleSheet.create({
   carouselText: {
     fontSize: 18,
     marginTop: 10,
+  },
+  categoryTitle: {
+    fontSize: 25,
+    fontWeight: '700',
+    color: '#323643',
+    textAlign: 'left',
+    marginTop: 20,
+    marginBottom: 10,
+    width: '90%',
+  },
+  categoryContainer: {
+    width: '90%',
+  },
+  itemContainer: {
+    width: '100%',
+    height: 100,
+    marginVertical: 10,
+    justifyContent: "flex-start",
+    alignItems: 'center',
+    elevation: 2,
+    flexDirection: "row",
+    paddingHorizontal: 10,
+  },
+  itemTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: Color.colorBlack,
+    marginLeft: 10,
+    textAlign: "left",
+  },
+  itemImage: {
+    width: 81,
+    height: 81,
+    borderRadius: 8,
   },
 });
 
