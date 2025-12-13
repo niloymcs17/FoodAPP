@@ -6,7 +6,11 @@ import { useNavigation, ParamListBase } from '@react-navigation/native';
 import { FontSize, Color, Padding } from '../GlobalStyles';
 import ModalComponent from '../modals/ModalComponent';
 
-const TopBar: React.FC = () => {
+type TopBarProps = {
+  onBackPress?: () => void; // Optional custom back press handler
+};
+
+const TopBar: React.FC<TopBarProps> = ({ onBackPress }) => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedDetails, setSelectedDetails] = useState<{ serviceType: string | null }>({
@@ -22,9 +26,17 @@ const TopBar: React.FC = () => {
     setModalVisible(false);
   };
 
+  const handleBackPress = () => {
+    if (onBackPress) {
+      onBackPress();
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
+  };
+
   return (
     <View style={styles.topBar}>
-      <Pressable onPress={() => navigation.goBack()}>
+      <Pressable onPress={handleBackPress}>
         <Image style={styles.menuIcon} contentFit="cover" source={require('../assets/back.png')} />
       </Pressable>
 

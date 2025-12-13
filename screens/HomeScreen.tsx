@@ -1,106 +1,163 @@
-import React from 'react';
-import { Text, StyleSheet, Pressable, View, Image, Dimensions, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, StyleSheet, Pressable, View, Image, Dimensions, ScrollView, FlatList } from 'react-native';
 import TopBar from '../components/TopBar';
 import { Color } from '../GlobalStyles';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation, ParamListBase } from "@react-navigation/native";
 import SearchBar from '../components/Search';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Swiper from 'react-native-swiper';
-import Background from '../shared/Background';
 import { Image as ExpoImage } from 'expo-image';
 import { CATAGORY, Catagory } from '../Const/Catagory.const';
 import { Divider } from 'react-native-paper';
+import { ITEM, Item } from '../Const/Items.const';
+import Items from '../components/Items';
 
 const { width: viewportWidth } = Dimensions.get('window');
 
 const carouselItems = [
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_5.jpg",
-    title: "Airport Cabs",
   },
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_4.jpg",
-    title: "Gift Cards",
   },
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_3.jpg",
-    title: "Hourly Stays",
   },
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_1.jpg",
-    title: "Travel Insurance",
   },
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_6.jpg",
-    title: "Forex",
   },
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_2.jpg",
-    title: "HomeStays & Villas",
-  }, {
+  },
+  {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/popup_image_banner_1.jpg",
-    title: "HomeStays & Villas",
   },
 ];
 const HomeScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const categories: Catagory[] = CATAGORY;
+  const [searchText, setSearchText] = useState('');
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const handlePress = (itemTitle: string) => {
-    navigation.navigate('SearchItem', { title: itemTitle });
+  const handleCategoryPress = (categoryTitle: string) => {
+    setSelectedCategory(categoryTitle);
+    setSearchText(''); // Clear search text when category is selected
   };
+
+  const handleSearchTextChange = (text: string) => {
+    setSearchText(text);
+    setSelectedCategory(''); // Clear category when searching
+  };
+
+  const handleClearFilter = () => {
+    setSearchText('');
+    setSelectedCategory('');
+  };
+
+  useEffect(() => {
+    if (searchText && searchText.length > 2) {
+      // Filter by search text
+      const filtered: Item[] = ITEM.filter((item: Item) => {
+        return item.label.toLowerCase().includes(searchText.toLowerCase());
+      });
+      setFilteredItems(filtered);
+    } else if (selectedCategory) {
+      // Filter by category
+      const filtered: Item[] = ITEM.filter((item: Item) => {
+        return item.catagory.toLowerCase().includes(selectedCategory.toLowerCase());
+      });
+      setFilteredItems(filtered);
+    } else {
+      setFilteredItems([]);
+    }
+  }, [searchText, selectedCategory]);
+
+  const showSearchResults = (searchText.length > 2) || selectedCategory.length > 0;
+  const hasResults = filteredItems.length > 0;
 
   return (
     <SafeAreaView style={{flex:1}}>
-      <TopBar />
+      <TopBar onBackPress={showSearchResults ? handleClearFilter : undefined} />
         <View style={styles.homeScreen}>
-          <Pressable style={styles.searchBar} onPress={() => handlePress('')}>
-            <SearchBar editable={false} />
-          </Pressable>
-          <ScrollView 
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollViewContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.wrapper}>
-              <Swiper
-                showsButtons={false}
-                autoplay={true}
-                autoplayTimeout={3} // Adjust the timeout as needed
-              >
-                {carouselItems.map((item, index) => (
-                  <View style={styles.carouselItem} key={index}>
-                    <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
-                  </View>
+          <View style={styles.searchBarContainer}>
+            <SearchBar 
+              editable={true} 
+              onChangeText={handleSearchTextChange}
+            />
+          </View>
+          
+          {showSearchResults ? (
+            <View style={styles.searchResultsContainer}>
+              {hasResults ? (
+                <>
+                  <Text style={styles.searchResultsTitle}>
+                    {selectedCategory 
+                      ? `${selectedCategory} - ${filteredItems.length} item${filteredItems.length > 1 ? 's' : ''}`
+                      : `Found ${filteredItems.length} item${filteredItems.length > 1 ? 's' : ''}`
+                    }
+                  </Text>
+                  <FlatList
+                    data={filteredItems}
+                    renderItem={({ item }) => <Items item={item} />}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.flatListContent}
+                    showsVerticalScrollIndicator={false}
+                  />
+                </>
+              ) : (
+                <View style={styles.noResultsContainer}>
+                  <Text style={styles.noResultsText}>No items found</Text>
+                  <Text style={styles.noResultsSubtext}>Try searching with different keywords</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            <ScrollView 
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollViewContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.wrapper}>
+                <Swiper
+                  showsButtons={false}
+                  autoplay={true}
+                  autoplayTimeout={3} // Adjust the timeout as needed
+                >
+                  {carouselItems.map((item, index) => (
+                    <View style={styles.carouselItem} key={index}>
+                      <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
+                    </View>
+                  ))}
+                </Swiper>
+              </View>
+              
+              <Text style={styles.categoryTitle}>{`What would you like to order?`}</Text>
+              
+              <View style={styles.categoryContainer}>
+                {categories.map((item, index) => (
+                  <Pressable key={index} onPress={() => handleCategoryPress(item.title)}>
+                    <View style={styles.itemContainer}>
+                      <ExpoImage style={styles.itemImage} contentFit="cover" source={item.image} />
+                      <Text style={styles.itemTitle}>{item.title}</Text>
+                    </View>
+                    <Divider />
+                  </Pressable>
                 ))}
-              </Swiper>
-            </View>
-            
-            <Text style={styles.categoryTitle}>{`What would you like to order?`}</Text>
-            
-            <View style={styles.categoryContainer}>
-              {categories.map((item, index) => (
-                <Pressable key={index} onPress={() => handlePress(item.title)}>
-                  <View style={styles.itemContainer}>
-                    <ExpoImage style={styles.itemImage} contentFit="cover" source={item.image} />
-                    <Text style={styles.itemTitle}>{item.title}</Text>
-                  </View>
-                  <Divider />
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
+              </View>
+            </ScrollView>
+          )}
         </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '90%', // Take full width minus padding
+  searchBarContainer: {
+    width: '90%',
+    marginBottom: 10,
   },
   homeScreen: {
     width: '100%',
@@ -115,8 +172,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 20,
   },
+  searchResultsContainer: {
+    width: '90%',
+    flex: 1,
+  },
+  searchResultsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Color.colorBlack,
+    marginBottom: 10,
+    paddingHorizontal: 5,
+  },
+  flatListContent: {
+    paddingBottom: 20,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noResultsText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Color.colorBlack,
+    marginBottom: 8,
+  },
+  noResultsSubtext: {
+    fontSize: 14,
+    color: Color.colorGray_200,
+  },
   wrapper: {
-    height: viewportWidth * 0.8,
+    height: Math.min(viewportWidth * 0.8, 400),
     marginVertical: 5,
   },
   carouselItem: {
@@ -125,13 +212,9 @@ const styles = StyleSheet.create({
   },
   carouselImage: {
     width: viewportWidth * 0.8,
-    height: viewportWidth * 0.8,
+    height: Math.min(viewportWidth * 0.8, 400),
     resizeMode: "contain",
     borderRadius: 10,
-  },
-  carouselText: {
-    fontSize: 18,
-    marginTop: 10,
   },
   categoryTitle: {
     fontSize: 25,

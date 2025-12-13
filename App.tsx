@@ -13,6 +13,8 @@ if (typeof setImmediate === 'undefined') {
   (global as any).clearImmediate = clearTimeout;
 }
 
+
+
 import { store } from "./store/store";
 import HomeScreen from "./screens/HomeScreen";
 import MyOrders from "./screens/MyOrders";
