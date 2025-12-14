@@ -18,6 +18,14 @@ declare module 'react-native-razorpay' {
     notes?: {
       [key: string]: string;
     };
+    method?: {
+      upi?: boolean;
+      card?: boolean;
+      netbanking?: boolean;
+      wallet?: boolean;
+      emi?: boolean;
+      paylater?: boolean;
+    };
   }
 
   interface RazorpayResponse {
@@ -38,6 +46,12 @@ declare module 'react-native-razorpay' {
   }
 
   class RazorpayCheckout {
+    static open(
+      options: RazorpayOptions,
+      successCallback?: (data: RazorpayResponse) => void,
+      errorCallback?: (error: RazorpayError) => void
+    ): void;
+    // Also support Promise-based API for backward compatibility
     static open(options: RazorpayOptions): Promise<RazorpayResponse>;
   }
 

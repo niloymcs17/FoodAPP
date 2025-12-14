@@ -1,22 +1,86 @@
 import * as React from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View, Pressable, FlatList } from "react-native";
+import { StyleSheet, Text, View, Pressable, FlatList, ActivityIndicator } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import { FontSize, Color, Border, Padding } from "../GlobalStyles";
+import { useEffect, useState } from "react";
+import { getCurrentUser, onAuthChange, signOutUser, getUserData } from "../services/firebaseService";
+import { User } from "firebase/auth";
+import ConfirmationPopup from '../modals/ConfirmationPopup';
+import ErrorPopup from '../modals/ErrorPopup';
 
 const menuItems = [
-  { title: "My Orders", screen: "MyOrders", icon: require("../assets/iconlybulkdocument.png") },
-  { title: "My Profile", screen: "Profile", icon: require("../assets/iconlybulkprofile.png") },
-  { title: "Delivery Address", screen: "DeliveryAddressList", icon: require("../assets/iconlybulklocation.png") },
-  { title: "Payment Methods", screen: null, icon: require("../assets/iconlybulkwallet.png") },
-  { title: "Contact Us", screen: null, icon: require("../assets/iconlybulkmessage.png") },
-  { title: "Settings", screen: null, icon: require("../assets/iconlybulksetting.png") },
-  { title: "Helps & FAQs", screen: null, icon: require("../assets/vector6.png") },
+  { title: "My Orders", screen: "MyOrders", icon: require("../assets/iconlybulkdocument.png"), iconBg: "#FFF4E6" },
+  { title: "My Profile", screen: "Profile", icon: require("../assets/iconlybulkprofile.png"), iconBg: "#E8F5E9" },
+  { title: "Delivery Address", screen: "DeliveryAddressList", icon: require("../assets/iconlybulklocation.png"), iconBg: "#E3F2FD" },
+  { title: "Payment Methods", screen: null, icon: require("../assets/iconlybulkwallet.png"), iconBg: "#F3E5F5" },
+  { title: "Contact Us", screen: null, icon: require("../assets/iconlybulkmessage.png"), iconBg: "#FFF3E0" },
+  { title: "Settings", screen: null, icon: require("../assets/iconlybulksetting.png"), iconBg: "#F5F5F5" },
+  { title: "Helps & FAQs", screen: null, icon: require("../assets/vector6.png"), iconBg: "#E0F7FA" },
 ];
 
 const SideMenu = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+  const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    // Get current user
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    
+    // Load user data from Firestore
+    if (currentUser) {
+      loadUserData(currentUser.uid);
+    }
+
+    // Listen to auth state changes
+    const unsubscribe = onAuthChange((authUser) => {
+      setUser(authUser);
+      if (authUser) {
+        loadUserData(authUser.uid);
+      } else {
+        setUserData(null);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const loadUserData = async (userId: string) => {
+    try {
+      const data = await getUserData(userId);
+      setUserData(data);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);
+    try {
+      setLoggingOut(true);
+      await signOutUser();
+      // Navigation will be handled by auth state change in App.tsx
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to log out');
+      setShowErrorPopup(true);
+      setLoggingOut(false);
+    }
+  };
 
   const handleNavigation = (screen: string | null) => {
     try {
@@ -32,36 +96,96 @@ const SideMenu = () => {
 
   const renderItem = ({ item }: { item: typeof menuItems[0] }) => (
     <Pressable
-      style={styles.menuItem}
+      style={({ pressed }) => [
+        styles.menuItem,
+        pressed && styles.menuItemPressed
+      ]}
       onPress={() => handleNavigation(item.screen)}
     >
-      <Image style={styles.icon} contentFit="cover" source={item.icon} />
+      <View style={[styles.iconContainer, { backgroundColor: item.iconBg }]}>
+        <Image style={styles.icon} contentFit="contain" source={item.icon} />
+      </View>
       <Text style={styles.menuText}>{item.title}</Text>
+      {item.screen && (
+        <View style={styles.arrowContainer}>
+          <Text style={styles.arrow}>›</Text>
+        </View>
+      )}
     </Pressable>
   );
 
   return (
     <View style={styles.sideMenu}>
       <View style={styles.header}>
-        <Image style={styles.profileIcon} contentFit="cover" source={require("../assets/profile.png")} />
+        <View style={styles.profileImageContainer}>
+          {user?.photoURL ? (
+            <Image style={styles.profileIcon} contentFit="cover" source={{ uri: user.photoURL }} />
+          ) : (
+            <Image style={styles.profileIcon} contentFit="cover" source={require("../assets/profile.png")} />
+          )}
+        </View>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>Farion Wick</Text>
-          <Text style={styles.userEmail}>farionwick@gmail.com</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color={Color.mainColor} />
+          ) : (
+            <>
+              <Text style={styles.userName}>
+                {userData?.displayName || user?.displayName || 'User'}
+              </Text>
+              <Text style={styles.userEmail}>
+                {user?.email || 'No email'}
+              </Text>
+            </>
+          )}
         </View>
       </View>
+      
+      <View style={styles.divider} />
+      
       <FlatList
         data={menuItems}
         renderItem={renderItem}
         keyExtractor={(item) => item.title}
         contentContainerStyle={styles.menuList}
+        showsVerticalScrollIndicator={false}
       />
+      
+      <View style={styles.divider} />
+      
       <Pressable
-        style={styles.logoutButton}
-        onPress={() => handleNavigation("Welcome")}
+        style={({ pressed }) => [
+          styles.logoutButton,
+          pressed && styles.logoutButtonPressed,
+          loggingOut && styles.logoutButtonDisabled
+        ]}
+        onPress={handleLogout}
+        disabled={loggingOut}
       >
-        <Text style={styles.logoutText}>Log Out</Text>
-        <Image style={styles.logoutIcon} contentFit="cover" source={require("../assets/group-18072.png")} />
+        {loggingOut ? (
+          <ActivityIndicator color={Color.colorWhite} />
+        ) : (
+          <>
+            <Text style={styles.logoutText}>Log Out</Text>
+            <Image style={styles.logoutIcon} contentFit="contain" source={require("../assets/group-18072.png")} />
+          </>
+        )}
       </Pressable>
+      <ConfirmationPopup
+        isVisible={showLogoutConfirm}
+        title="Log Out"
+        message="Are you sure you want to log out?"
+        confirmText="Log Out"
+        cancelText="Cancel"
+        confirmButtonColor="#FF3B30"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
+      <ErrorPopup
+        isVisible={showErrorPopup}
+        title="Error"
+        message={errorMessage}
+        onClose={() => setShowErrorPopup(false)}
+      />
     </View>
   );
 };
@@ -70,69 +194,136 @@ const styles = StyleSheet.create({
   sideMenu: {
     flex: 1,
     backgroundColor: Color.colorWhite,
-    paddingHorizontal: 17,
-    paddingVertical: Padding.p_12xl,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
     justifyContent: "space-between",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
+    paddingBottom: 20,
+  },
+  profileImageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    overflow: "hidden",
+    backgroundColor: Color.colorWhitesmoke_100,
+    borderWidth: 3,
+    borderColor: Color.colorWhite,
+    shadowColor: Color.colorBlack,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   profileIcon: {
-    width: 99,
-    height: 90,
+    width: "100%",
+    height: "100%",
   },
   userInfo: {
-    marginLeft: 10,
+    marginLeft: 16,
+    flex: 1,
   },
   userName: {
     fontSize: FontSize.size_xl,
-    fontWeight: "600",
+    fontWeight: "700",
     color: Color.colorBlack,
+    marginBottom: 4,
+    letterSpacing: 0.3,
   },
   userEmail: {
     fontSize: FontSize.size_sm,
-    color: "#9ea1b1",
+    color: Color.colorLightslategray_100,
+    fontWeight: "400",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Color.colorWhitesmoke_100,
+    marginVertical: 8,
   },
   menuList: {
     flexGrow: 1,
+    paddingTop: 8,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 25,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 4,
+    borderRadius: 12,
+    backgroundColor: Color.colorWhite,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  menuItemPressed: {
+    backgroundColor: Color.colorGray_100,
+    borderColor: Color.colorWhitesmoke_100,
+    transform: [{ scale: 0.98 }],
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
   },
   icon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
+    width: 22,
+    height: 22,
   },
   menuText: {
     fontSize: FontSize.size_base,
     color: Color.colorBlack,
+    fontWeight: "500",
+    flex: 1,
+    letterSpacing: 0.2,
+  },
+  arrowContainer: {
+    marginLeft: 8,
+  },
+  arrow: {
+    fontSize: 20,
+    color: Color.colorLightslategray_100,
+    fontWeight: "300",
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Color.mainColor,
-    borderRadius: Border.br_9xl_5,
-    padding: 10,
-    shadowColor: "rgba(254, 114, 76, 0.2)",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 1,
-    shadowRadius: 30,
-    elevation: 30,
-    width:120
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginTop: 8,
+    shadowColor: Color.mainColor,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  logoutButtonPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  logoutButtonDisabled: {
+    opacity: 0.6,
   },
   logoutText: {
     fontSize: FontSize.size_base,
     color: Color.colorWhite,
-    marginRight: 10,
+    fontWeight: "600",
+    marginRight: 8,
+    letterSpacing: 0.5,
   },
   logoutIcon: {
-    width: 26,
-    height: 26,
+    width: 20,
+    height: 20,
+    tintColor: Color.colorWhite,
   },
 });
 

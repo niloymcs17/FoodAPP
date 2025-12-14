@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Pressable } from 'react-native';
 import Modal from 'react-native-modal';
 import { RadioButton } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
@@ -7,6 +7,7 @@ import { selectAddresses, setSelectedAddress, Address } from '../store/addressSl
 import { useNavigation } from '@react-navigation/native';
 import { Color } from '../GlobalStyles';
 import { Ionicons } from '@expo/vector-icons';
+import ErrorPopup from './ErrorPopup';
 
 const serviceTypes = ['Delivery', 'Pick Up', 'Table Order'];
 
@@ -28,6 +29,7 @@ const ServiceTypeModal: React.FC<ServiceTypeModalProps> = ({
     const addresses = useSelector(selectAddresses);
     const [selectedService, setSelectedService] = useState<string | null>(initialServiceType);
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(initialAddressId);
+    const [showErrorPopup, setShowErrorPopup] = useState(false);
 
     // Update selected service when modal opens with initial value
     useEffect(() => {
@@ -77,17 +79,17 @@ const ServiceTypeModal: React.FC<ServiceTypeModalProps> = ({
         // We'll use a navigation param to track this
         onClose({ serviceType: null, addressId: null });
         setTimeout(() => {
-            navigation.navigate('AddNewAddress' as never, { 
+            (navigation as any).navigate('AddNewAddress', { 
                 returnToModal: true,
                 serviceType: selectedService || 'Delivery'
-            } as never);
+            });
         }, 300);
     };
 
     const handleConfirm = () => {
         if (selectedService === 'Delivery' && !selectedAddressId) {
             if (addresses.length === 0) {
-                Alert.alert('No Address', 'Please add a delivery address first.');
+                setShowErrorPopup(true);
                 return;
             }
         }
@@ -127,6 +129,7 @@ const ServiceTypeModal: React.FC<ServiceTypeModalProps> = ({
     );
 
     return (
+        <>
         <Modal 
             isVisible={isVisible} 
             onBackdropPress={() => onClose({ serviceType: null, addressId: null })} 
@@ -198,6 +201,13 @@ const ServiceTypeModal: React.FC<ServiceTypeModalProps> = ({
                 </TouchableOpacity>
             </View>
         </Modal>
+        <ErrorPopup
+            isVisible={showErrorPopup}
+            title="No Address"
+            message="Please add a delivery address first."
+            onClose={() => setShowErrorPopup(false)}
+        />
+    </>
     );
 };
 

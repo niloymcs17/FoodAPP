@@ -5,50 +5,89 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import Ongoingorder from "../components/Ongoingorder";
 import OrderHistory from "../components/OrderHistory";
-import { FontSize,  Color, Border } from "../GlobalStyles";
+import { FontSize, Color, Border } from "../GlobalStyles";
 import { ORDER } from "../Const/Order.const";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyOrders = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
-  const [activeTab, setActiveTab] = useState('Ongoing');
-  const ongoingOrder = ORDER.filter((item:any)=> item.status !== 'delivered') || [];
-  const pastOrder = ORDER.filter((item:any)=> item.status == 'delivered');
+  const [activeTab, setActiveTab] = useState<'Ongoing' | 'History'>('Ongoing');
+  const ongoingOrder = ORDER.filter((item: any) => item.status !== 'delivered') || [];
+  const pastOrder = ORDER.filter((item: any) => item.status == 'delivered');
 
   return (
-    <SafeAreaView style={styles.myOrdersContainer}>
-      <View style={styles.navbar}>
+    <SafeAreaView style={styles.myOrdersContainer} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
         <Pressable
-          style={styles.backButton}
+          style={({ pressed }) => [
+            styles.backButton,
+            pressed && styles.backButtonPressed
+          ]}
           onPress={() => navigation.goBack()}
         >
-          <Image
-            style={styles.backIcon}
-            contentFit="cover"
-            source={require("../assets/back.png")}
-          />
+          <View style={styles.backButtonContainer}>
+            <Image
+              style={styles.backIcon}
+              contentFit="contain"
+              source={require("../assets/back.png")}
+            />
+          </View>
         </Pressable>
-        <Text style={styles.myOrdersText}>My Orders</Text>
-      </View>
-      <View style={styles.tabs}>
-        <Pressable
-          style={[styles.tab, activeTab === 'Ongoing' && styles.activeTab]}
-          onPress={() => setActiveTab('Ongoing')}
-        >
-          <Text style={[styles.tabText, activeTab === 'Ongoing' && styles.activeTabText]}>
-            Ongoing
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.myOrdersText}>My Orders</Text>
+          <Text style={styles.ordersCount}>
+            {activeTab === 'Ongoing' ? `${ongoingOrder.length} Active` : `${pastOrder.length} Completed`}
           </Text>
-        </Pressable>
-        <Pressable
-          style={[styles.tab, activeTab === 'History' && styles.activeTab]}
-          onPress={() => setActiveTab('History')}
-        >
-          <Text style={[styles.tabText, activeTab === 'History' && styles.activeTabText]}>
-            History
-          </Text>
-        </Pressable>
+        </View>
       </View>
-      {activeTab === 'Ongoing' ? <Ongoingorder  data={ongoingOrder} /> : <OrderHistory data={pastOrder} />}
+
+      {/* Modern Tab Selector */}
+      <View style={styles.tabContainer}>
+        <View style={styles.tabs}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.tab,
+              activeTab === 'Ongoing' && styles.activeTab,
+              pressed && styles.tabPressed
+            ]}
+            onPress={() => setActiveTab('Ongoing')}
+          >
+            <Text style={[
+              styles.tabText,
+              activeTab === 'Ongoing' && styles.activeTabText
+            ]}>
+              Ongoing
+            </Text>
+            {activeTab === 'Ongoing' && <View style={styles.activeIndicator} />}
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.tab,
+              activeTab === 'History' && styles.activeTab,
+              pressed && styles.tabPressed
+            ]}
+            onPress={() => setActiveTab('History')}
+          >
+            <Text style={[
+              styles.tabText,
+              activeTab === 'History' && styles.activeTabText
+            ]}>
+              History
+            </Text>
+            {activeTab === 'History' && <View style={styles.activeIndicator} />}
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        {activeTab === 'Ongoing' ? (
+          <Ongoingorder data={ongoingOrder} />
+        ) : (
+          <OrderHistory data={pastOrder} />
+        )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -57,55 +96,108 @@ const styles = StyleSheet.create({
   myOrdersContainer: {
     backgroundColor: Color.colorWhite,
     flex: 1,
-    padding: 20,
   },
-  navbar: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 20,
+    backgroundColor: Color.colorWhite,
+    borderBottomWidth: 1,
+    borderBottomColor: Color.colorWhitesmoke_100,
   },
   backButton: {
-    marginRight: 10,
+    marginRight: 12,
   },
-  backIcon: {
-    width: 24,
-    height: 24,
-  },
-  myOrdersText: {
-    fontSize: FontSize.size_lg,
-    fontWeight: "500",
-    color: Color.colorGray_200,
-  },
-  tabs: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 20,
-    backgroundColor: Color.colorWhite,
-    borderRadius: Border.br_md,
-    borderColor: Color.mainColor
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: Border.br_md,
+  backButtonContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Color.colorWhitesmoke_100,
     justifyContent: "center",
     alignItems: "center",
   },
+  backButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+    tintColor: Color.colorBlack,
+  },
+  headerTitleContainer: {
+    flex: 1,
+  },
+  myOrdersText: {
+    fontSize: FontSize.size_5xl,
+    fontWeight: "700",
+    color: Color.colorBlack,
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  ordersCount: {
+    fontSize: FontSize.size_sm,
+    color: Color.colorLightslategray_100,
+    fontWeight: "400",
+  },
+  tabContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: Color.colorWhite,
+  },
+  tabs: {
+    flexDirection: "row",
+    backgroundColor: Color.colorWhitesmoke_100,
+    borderRadius: 12,
+    padding: 4,
+    position: "relative",
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    zIndex: 1,
+  },
   activeTab: {
-    backgroundColor: Color.mainColor,
-    shadowColor: "#000",
+    backgroundColor: Color.colorWhite,
+    shadowColor: Color.colorBlack,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tabPressed: {
+    opacity: 0.8,
   },
   tabText: {
-    fontSize: FontSize.size_sm,
-    color: Color.mainColor,
+    fontSize: FontSize.size_base,
+    color: Color.colorLightslategray_100,
+    fontWeight: "500",
+    letterSpacing: 0.2,
   },
   activeTabText: {
-    color: Color.colorWhite,
+    color: Color.mainColor,
     fontWeight: "600",
+  },
+  activeIndicator: {
+    position: "absolute",
+    bottom: 4,
+    left: "50%",
+    marginLeft: -15,
+    width: 30,
+    height: 3,
+    backgroundColor: Color.mainColor,
+    borderRadius: 2,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: Color.colorGray_100,
   },
 });
 

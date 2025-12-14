@@ -10,6 +10,8 @@ import { useDispatch } from 'react-redux';
 import { addAddress, setSelectedAddress } from '../store/addressSlice';
 import { Ionicons } from '@expo/vector-icons';
 import SuccessPopup from '../modals/SuccessPopup';
+import ErrorPopup from '../modals/ErrorPopup';
+import { addUserAddress, getCurrentUser } from '../services/firebaseService';
 
 type AddNewAddressRouteParams = {
   AddNewAddress: {
@@ -42,6 +44,9 @@ const AddNewAddress = () => {
     zipCode: "",
   });
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorPopupTitle, setErrorPopupTitle] = useState('Error');
+  const [errorPopupMessage, setErrorPopupMessage] = useState('');
 
   useEffect(() => {
     requestLocationPermission();
@@ -65,40 +70,29 @@ const AddNewAddress = () => {
       const { status } = await Location.getForegroundPermissionsAsync();
       
       if (status !== 'granted') {
-        // Permission denied - user can still enter address manually
+        setErrorPopupTitle('Permission Denied');
+        setErrorPopupMessage('Location permission is required to get your current coordinates. Please enable it in settings.');
+        setShowErrorPopup(true);
         setGettingLocation(false);
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
       const { latitude, longitude } = location.coords;
 
-      // Reverse geocode to get address
-      const geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
-      
-      if (geocode && geocode.length > 0) {
-        const addr = geocode[0];
-        setAddress({
-          ...address,
-          street: `${addr.street || ''} ${addr.streetNumber || ''}`.trim(),
-          city: addr.city || addr.subAdministrativeArea || '',
-          state: addr.region || '',
-          zipCode: addr.postalCode || '',
-          latitude,
-          longitude,
-        });
-        // Clear errors for fields that were auto-filled
-        setErrors({
-          ...errors,
-          street: "",
-          city: "",
-          state: "",
-          zipCode: "",
-        });
-      }
-    } catch (error) {
+      // Store coordinates in address state
+      setAddress({
+        ...address,
+        latitude,
+        longitude,
+      });
+    } catch (error: any) {
       console.error('Error getting location:', error);
-      // Error getting location - user can still enter address manually
+      setErrorPopupTitle('Error');
+      setErrorPopupMessage(error.message || 'Failed to get current location. Please try again.');
+      setShowErrorPopup(true);
     } finally {
       setGettingLocation(false);
     }
@@ -152,36 +146,63 @@ const AddNewAddress = () => {
     return isValid;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate form
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    const newAddress = {
-      id: Date.now().toString(),
-      label: address.label.trim(),
-      street: address.street.trim(),
-      city: address.city.trim(),
-      state: address.state.trim(),
-      zipCode: address.zipCode.trim(),
-      latitude: address.latitude,
-      longitude: address.longitude,
-      isDefault: false,
-    };
 
-    dispatch(addAddress(newAddress));
-    
-    // Automatically select the newly added address if it's the first one or marked as default
-    if (returnToModal) {
-      // Set the new address as selected
-      dispatch(setSelectedAddress(newAddress.id));
+    try {
+      // Check if user is authenticated
+      const user = getCurrentUser();
+      if (!user) {
+        setErrorPopupTitle('Authentication Required');
+        setErrorPopupMessage('Please sign in to save addresses.');
+        setShowErrorPopup(true);
+        setLoading(false);
+        return;
+      }
+
+      const addressData = {
+        label: address.label.trim(),
+        street: address.street.trim(),
+        city: address.city.trim(),
+        state: address.state.trim(),
+        zipCode: address.zipCode.trim(),
+        latitude: address.latitude,
+        longitude: address.longitude,
+        isDefault: false,
+      };
+
+      // Save to Firestore
+      const savedAddress = await addUserAddress(addressData);
+      
+      // Also save to Redux store for local state management
+      const newAddress = {
+        id: savedAddress.id,
+        ...addressData,
+      };
+      
+      dispatch(addAddress(newAddress));
+      
+      // Automatically select the newly added address if it's the first one or marked as default
+      if (returnToModal) {
+        // Set the new address as selected
+        dispatch(setSelectedAddress(newAddress.id));
+      }
+      
+      setLoading(false);
+      // Show success popup
+      setShowSuccessPopup(true);
+    } catch (error: any) {
+      console.error('Error saving address:', error);
+      setLoading(false);
+      setErrorPopupTitle('Error');
+      setErrorPopupMessage(error.message || 'Failed to save address. Please try again.');
+      setShowErrorPopup(true);
     }
-    
-    setLoading(false);
-    // Show success popup
-    setShowSuccessPopup(true);
   };
 
   const handleSuccessPopupClose = () => {
@@ -228,6 +249,21 @@ const AddNewAddress = () => {
             {gettingLocation ? 'Getting Location...' : 'Use Current Location'}
           </Text>
         </Pressable>
+
+        {/* Display Geo Coordinates */}
+        {(address.latitude !== undefined && address.longitude !== undefined) && (
+          <View style={styles.coordinatesContainer}>
+            <Text style={styles.coordinatesLabel}>Current Location Coordinates:</Text>
+            <View style={styles.coordinatesBox}>
+              <Text style={styles.coordinatesText}>
+                <Text style={styles.coordinatesLabelText}>Latitude:</Text> {address.latitude.toFixed(6)}
+              </Text>
+              <Text style={styles.coordinatesText}>
+                <Text style={styles.coordinatesLabelText}>Longitude:</Text> {address.longitude.toFixed(6)}
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.form}>
           <View style={styles.inputGroup}>
@@ -304,6 +340,12 @@ const AddNewAddress = () => {
         message="Address saved successfully!"
         onClose={handleSuccessPopupClose}
       />
+      <ErrorPopup
+        isVisible={showErrorPopup}
+        title={errorPopupTitle}
+        message={errorPopupMessage}
+        onClose={() => setShowErrorPopup(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -355,6 +397,37 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_base,
     color: Color.mainColor,
     fontWeight: '500',
+  },
+  coordinatesContainer: {
+    marginBottom: 20,
+    padding: 16,
+    backgroundColor: Color.colorGray_100,
+    borderRadius: Border.br_md,
+    borderWidth: 1,
+    borderColor: Color.mainColor,
+  },
+  coordinatesLabel: {
+    fontSize: FontSize.size_base,
+    fontWeight: '600',
+    color: Color.colorBlack,
+    marginBottom: 12,
+  },
+  coordinatesBox: {
+    backgroundColor: Color.colorWhite,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Color.colorWhitesmoke_100,
+  },
+  coordinatesText: {
+    fontSize: FontSize.size_base,
+    color: Color.colorBlack,
+    marginBottom: 8,
+    fontFamily: 'monospace',
+  },
+  coordinatesLabelText: {
+    fontWeight: '600',
+    color: Color.mainColor,
   },
   form: {
     gap: 20,

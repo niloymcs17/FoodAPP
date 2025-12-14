@@ -76,11 +76,6 @@ const styles = StyleSheet.create({
   date: {
     color: '#999',
   },
-  customerName: {
-    fontWeight: 'bold',
-    color: '#e74c3c',
-    marginBottom: 16,
-  },
   items: {
     marginBottom: 16,
   },
@@ -92,10 +87,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 4,
-  },
-  itemDetail: {
-    marginLeft: 16,
-    color: '#999',
   },
   instruction: {
     marginBottom: 16,

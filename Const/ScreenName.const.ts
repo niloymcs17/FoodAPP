@@ -6,6 +6,7 @@ export const SCREEN_NAME = {
     SEARCH_ITEM: 'SearchItem',
     PAYMENT: 'Payment',
     CATAGORY:"Catagory",
-    PROFILE:"Account"
+    PROFILE:"Account",
+    LOGIN: 'Login',
   };
   

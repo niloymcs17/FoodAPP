@@ -1,63 +1,74 @@
 // PaymentScreen.tsx
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
-import RazorpayCheckout from 'react-native-razorpay';
+import { Image } from 'expo-image';
 import { SCREEN_NAME } from '../Const/ScreenName.const';
 import { selectCartTotal, selectCartItems } from '../store/selectors';
 import { clearCart } from '../store/cartSlice';
 import { Color, FontSize, CURRENCY } from '../GlobalStyles';
-
-// Replace with your Razorpay Key ID from Razorpay Dashboard
-const RAZORPAY_KEY_ID = 'YOUR_RAZORPAY_KEY_ID'; // Get this from https://dashboard.razorpay.com/app/keys
+import { createOrder, getCurrentUser, getUserData } from '../services/firebaseService';
+import { selectSelectedAddress } from '../store/addressSlice';
+import { User } from 'firebase/auth';
+import ErrorPopup from '../modals/ErrorPopup';
+import SuccessPopup from '../modals/SuccessPopup';
+import processPayment from '../services/paymentService';
 
 const PaymentScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const cartTotal = useSelector(selectCartTotal);
   const cartItems = useSelector(selectCartItems);
+  const selectedAddress = useSelector(selectSelectedAddress);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorPopupTitle, setErrorPopupTitle] = useState('Error');
+  const [errorPopupMessage, setErrorPopupMessage] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<any>(null);
+
+  // Fetch user and userData on component mount
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    
+    if (currentUser) {
+      getUserData(currentUser.uid)
+        .then((data) => {
+          setUserData(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+          // Continue without userData - payment service will handle empty values
+        });
+    }
+  }, []);
 
   const handlePayment = async () => {
     if (cartTotal <= 0) {
-      Alert.alert('Error', 'Cart is empty. Please add items to cart.');
+      setErrorPopupTitle('Error');
+      setErrorPopupMessage('Cart is empty. Please add items to cart.');
+      setShowErrorPopup(true);
       return;
     }
 
-    if (RAZORPAY_KEY_ID === 'YOUR_RAZORPAY_KEY_ID') {
-      Alert.alert(
-        'Configuration Required',
-        'Please set your Razorpay Key ID in PaymentScreen.tsx. Get it from https://dashboard.razorpay.com/app/keys'
-      );
+    // Check if user is authenticated
+    const currentUser = user || getCurrentUser();
+    if (!currentUser) {
+      setErrorPopupTitle('Authentication Required');
+      setErrorPopupMessage('Please sign in to proceed with payment.');
+      setShowErrorPopup(true);
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Create order options
-      const options = {
-        description: 'Food Order Payment',
-        image: 'https://your-logo-url.com/logo.png', // Optional: Add your app logo
-        currency: 'INR',
-        key: RAZORPAY_KEY_ID,
-        amount: Math.round(cartTotal * 100), // Amount in paise (multiply by 100)
-        name: 'Food App',
-        prefill: {
-          email: 'customer@example.com', // You can get this from user profile
-          contact: '9999999999', // You can get this from user profile
-          name: 'Customer Name', // You can get this from user profile
-        },
-        theme: { color: Color.mainColor },
-        order_id: '', // You can generate this from your backend
-        notes: {
-          order_items: cartItems.map(item => `${item.label} x${item.quantity}`).join(', '),
-        },
-      };
-
-      // Open Razorpay checkout
-      const data = await RazorpayCheckout.open(options);
+      // Use payment service to process payment
+      const data = await processPayment(cartTotal, currentUser, userData);
 
       // Handle successful payment
       console.log('Payment Success:', data);
@@ -65,33 +76,63 @@ const PaymentScreen = () => {
       // Verify payment on your backend (recommended)
       // await verifyPayment(data.razorpay_payment_id, data.razorpay_order_id, data.razorpay_signature);
 
+      // Create order in Firestore
+      try {
+        await createOrder({
+          items: cartItems.map(item => ({
+            id: item.id,
+            label: item.label,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          total: cartTotal,
+          address: selectedAddress || {},
+          paymentMethod: 'Razorpay',
+          paymentId: data.razorpay_payment_id,
+          razorpayOrderId: data.razorpay_order_id,
+          razorpaySignature: data.razorpay_signature,
+        });
+        console.log('Order created successfully');
+      } catch (orderError: any) {
+        console.error('Error creating order:', orderError);
+        // Don't block the success flow if order creation fails
+        // The payment was successful, order can be created manually if needed
+      }
+
       // Clear cart after successful payment
       dispatch(clearCart());
 
-      Alert.alert(
-        'Payment Successful!',
-        `Payment ID: ${data.razorpay_payment_id}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate(SCREEN_NAME.HOME as never),
-          },
-        ]
-      );
+      setSuccessMessage(`Payment ID: ${data.razorpay_payment_id}`);
+      setShowSuccessPopup(true);
     } catch (error: any) {
       console.log('Payment Error:', error);
+      console.log('Error code:', error.code);
+      console.log('Error message:', error.message);
+      console.log('Error description:', error.description);
       
       // Handle payment cancellation or error
-      if (error.code === 'NETWORK_ERROR') {
-        Alert.alert('Network Error', 'Please check your internet connection and try again.');
+      if (error.code === 'PAYMENT_CANCELLED') {
+        // Payment was cancelled by user - don't show error, just stop loading
+        console.log('Payment cancelled by user');
+      } else if (error.code === 'NETWORK_ERROR') {
+        setErrorPopupTitle('Network Error');
+        setErrorPopupMessage('Please check your internet connection and try again.');
+        setShowErrorPopup(true);
       } else if (error.code === 'BAD_REQUEST_ERROR') {
-        Alert.alert('Payment Error', 'Invalid payment details. Please try again.');
+        setErrorPopupTitle('Payment Error');
+        setErrorPopupMessage('Invalid payment details. Please try again.');
+        setShowErrorPopup(true);
       } else if (error.code === 'SERVER_ERROR') {
-        Alert.alert('Server Error', 'Something went wrong. Please try again later.');
-      } else if (error.code !== 'PAYMENT_CANCELLED') {
-        Alert.alert('Payment Failed', error.description || 'Payment could not be completed. Please try again.');
+        setErrorPopupTitle('Server Error');
+        setErrorPopupMessage('Something went wrong. Please try again later.');
+        setShowErrorPopup(true);
+      } else {
+        // Handle generic errors (including service-level errors and timeouts)
+        const errorMessage = error.message || error.description || 'Payment could not be completed. Please try again.';
+        setErrorPopupTitle('Payment Failed');
+        setErrorPopupMessage(errorMessage);
+        setShowErrorPopup(true);
       }
-      // If payment was cancelled, we don't show an error
     } finally {
       setIsProcessing(false);
     }
@@ -99,9 +140,28 @@ const PaymentScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header with Back Button */}
+      <View style={styles.headerContainer}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.backButton,
+            pressed && styles.backButtonPressed
+          ]}
+          onPress={() => navigation.goBack()}
+        >
+          <View style={styles.backButtonContainer}>
+            <Image
+              style={styles.backIcon}
+              contentFit="contain"
+              source={require("../assets/back.png")}
+            />
+          </View>
+        </Pressable>
+        <Text style={styles.headerTitle}>Payment</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
       <View style={styles.content}>
-        <Text style={styles.header}>Payment</Text>
-        
         <View style={styles.summaryContainer}>
           <Text style={styles.summaryLabel}>Order Summary</Text>
           <View style={styles.itemRow}>
@@ -130,6 +190,20 @@ const PaymentScreen = () => {
           Note: You'll be redirected to Razorpay secure payment gateway
         </Text>
       </View>
+      <ErrorPopup
+        isVisible={showErrorPopup}
+        title={errorPopupTitle}
+        message={errorPopupMessage}
+        onClose={() => setShowErrorPopup(false)}
+      />
+      <SuccessPopup
+        isVisible={showSuccessPopup}
+        message={successMessage}
+        onClose={() => {
+          setShowSuccessPopup(false);
+          navigation.navigate(SCREEN_NAME.HOME as never);
+        }}
+      />
     </View>
   );
 };
@@ -138,18 +212,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Color.colorWhite,
-    padding: 16,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: Color.colorWhite,
+    borderBottomWidth: 1,
+    borderBottomColor: Color.colorWhitesmoke_100,
+  },
+  backButton: {
+    marginRight: 12,
+  },
+  backButtonContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Color.colorWhitesmoke_100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+    tintColor: Color.colorBlack,
+  },
+  headerTitle: {
+    fontSize: FontSize.size_5xl,
+    fontWeight: '700',
+    color: Color.colorBlack,
+    letterSpacing: 0.3,
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 52, // Same width as back button + margin for alignment
   },
   content: {
     flex: 1,
+    padding: 16,
     justifyContent: 'center',
-  },
-  header: {
-    fontSize: FontSize.size_5xl,
-    fontWeight: 'bold',
-    marginBottom: 32,
-    textAlign: 'center',
-    color: Color.colorBlack,
   },
   summaryContainer: {
     backgroundColor: Color.colorGray_100,

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store"; // Adjust based on your store setup
 import Items from "../components/Items";
