@@ -8,7 +8,7 @@ import { FontSize, Color, Border, Padding } from "../GlobalStyles";
 const menuItems = [
   { title: "My Orders", screen: "MyOrders", icon: require("../assets/iconlybulkdocument.png") },
   { title: "My Profile", screen: "Profile", icon: require("../assets/iconlybulkprofile.png") },
-  { title: "Delivery Address", screen: "AddNewAddress", icon: require("../assets/iconlybulklocation.png") },
+  { title: "Delivery Address", screen: "DeliveryAddressList", icon: require("../assets/iconlybulklocation.png") },
   { title: "Payment Methods", screen: null, icon: require("../assets/iconlybulkwallet.png") },
   { title: "Contact Us", screen: null, icon: require("../assets/iconlybulkmessage.png") },
   { title: "Settings", screen: null, icon: require("../assets/iconlybulksetting.png") },

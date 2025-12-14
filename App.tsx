@@ -22,6 +22,7 @@ import SearchItem from "./screens/SearchItem";
 import CartScreen from "./screens/CartScreen";
 import PaymentScreen from "./screens/PaymentScreen";
 import AddNewAddress from "./screens/AddNewAddress";
+import DeliveryAddressList from "./screens/DeliveryAddressList";
 import { SCREEN_NAME } from "./Const/ScreenName.const";
 import { selectCartItemsCount } from "./store/cartSlice";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -68,6 +69,7 @@ const MainStackNavigator = () => (
     <Stack.Screen name={SCREEN_NAME.SEARCH_ITEM} component={SearchItem} />
     <Stack.Screen name={SCREEN_NAME.ORDER} component={MyOrders} />
     <Stack.Screen name={SCREEN_NAME.PAYMENT} component={PaymentScreen} />
+    <Stack.Screen name="DeliveryAddressList" component={DeliveryAddressList} />
     <Stack.Screen name="AddNewAddress" component={AddNewAddress} />
   </Stack.Navigator>
 );
