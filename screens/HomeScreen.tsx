@@ -10,10 +10,12 @@ import { CATAGORY, Catagory } from '../Const/Catagory.const';
 import { Divider } from 'react-native-paper';
 import { ITEM, Item } from '../Const/Items.const';
 import Items from '../components/Items';
+import { getImagesFromFolder } from '../services/firebaseService';
 
 const { width: viewportWidth } = Dimensions.get('window');
 
-const carouselItems = [
+// Fallback carousel images (original hardcoded URLs)
+const fallbackCarouselItems = [
   {
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_5.jpg",
   },
@@ -36,11 +38,14 @@ const carouselItems = [
     imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/popup_image_banner_1.jpg",
   },
 ];
+
 const HomeScreen = () => {
   const categories: Catagory[] = CATAGORY;
   const [searchText, setSearchText] = useState('');
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [carouselItems, setCarouselItems] = useState<{ imgUrl: string }[]>(fallbackCarouselItems);
+  const [loadingCarousel, setLoadingCarousel] = useState(true);
 
   const handleCategoryPress = (categoryTitle: string) => {
     setSelectedCategory(categoryTitle);
@@ -56,6 +61,48 @@ const HomeScreen = () => {
     setSearchText('');
     setSelectedCategory('');
   };
+
+  // Fetch carousel images from Firebase Storage
+  useEffect(() => {
+    const fetchCarouselImages = async () => {
+      try {
+        setLoadingCarousel(true);
+        
+        // Try different path formats
+        let imageUrls: string[] = [];
+        const pathsToTry = ['carouselimage/', 'carouselimage'];
+        
+        for (const path of pathsToTry) {
+          try {
+            imageUrls = await getImagesFromFolder(path);
+            if (imageUrls.length > 0) {
+              break;
+            }
+          } catch (pathError: any) {
+            const errorCode = pathError?.code || pathError?.message || 'unknown';
+            // If it's a permission/unknown error, don't try other paths
+            if (errorCode.includes('storage/unknown') || errorCode.includes('storage/unauthorized')) {
+              break;
+            }
+            continue;
+          }
+        }
+        
+        if (imageUrls.length > 0) {
+          setCarouselItems(imageUrls.map(url => ({ imgUrl: url })));
+        } else {
+          setCarouselItems(fallbackCarouselItems);
+        }
+      } catch (error) {
+        // Fallback to original hardcoded images
+        setCarouselItems(fallbackCarouselItems);
+      } finally {
+        setLoadingCarousel(false);
+      }
+    };
+
+    fetchCarouselImages();
+  }, []);
 
   useEffect(() => {
     if (searchText && searchText.length > 2) {
@@ -120,19 +167,21 @@ const HomeScreen = () => {
               contentContainerStyle={styles.scrollViewContent}
               showsVerticalScrollIndicator={false}
             >
-              <View style={styles.wrapper}>
-                <Swiper
-                  showsButtons={false}
-                  autoplay={true}
-                  autoplayTimeout={3} // Adjust the timeout as needed
-                >
-                  {carouselItems.map((item, index) => (
-                    <View style={styles.carouselItem} key={index}>
-                      <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
-                    </View>
-                  ))}
-                </Swiper>
-              </View>
+              {carouselItems.length > 0 && (
+                <View style={styles.wrapper}>
+                  <Swiper
+                    showsButtons={false}
+                    autoplay={true}
+                    autoplayTimeout={3} // Adjust the timeout as needed
+                  >
+                    {carouselItems.map((item, index) => (
+                      <View style={styles.carouselItem} key={index}>
+                        <Image source={{ uri: item.imgUrl }} style={styles.carouselImage} />
+                      </View>
+                    ))}
+                  </Swiper>
+                </View>
+              )}
               
               <Text style={styles.categoryTitle}>{`What would you like to order?`}</Text>
               

@@ -36,6 +36,7 @@ import {
   uploadBytes,
   getDownloadURL,
   deleteObject,
+  listAll,
 } from 'firebase/storage';
 
 // ==================== AUTHENTICATION ====================
@@ -395,6 +396,50 @@ export const deleteImage = async (path: string): Promise<void> => {
     await deleteObject(imageRef);
   } catch (error: any) {
     throw new Error(error.message || 'Failed to delete image');
+  }
+};
+
+/**
+ * Get all images from a Firebase Storage folder
+ * @param folderPath - The folder path in Firebase Storage (e.g., 'carouselimage/' or 'carouselimage')
+ * @returns Array of image URLs
+ */
+export const getImagesFromFolder = async (folderPath: string): Promise<string[]> => {
+  try {
+    // Validate storage is initialized
+    if (!storage) {
+      throw new Error('Firebase Storage is not initialized. Please check your Firebase configuration.');
+    }
+    
+    // Ensure folder path ends with '/' for proper folder reference
+    const normalizedPath = folderPath.endsWith('/') ? folderPath : `${folderPath}/`;
+    const folderRef = storageRef(storage, normalizedPath);
+    
+    const result = await listAll(folderRef);
+    
+    if (result.items.length === 0) {
+      return [];
+    }
+    
+    // Get download URLs for all items
+    const downloadURLs = await Promise.all(
+      result.items.map(async (itemRef) => {
+        try {
+          const url = await getDownloadURL(itemRef);
+          return url;
+        } catch (error) {
+          return null;
+        }
+      })
+    );
+    
+    // Filter out any null values (failed downloads)
+    const validUrls = downloadURLs.filter((url): url is string => url !== null);
+    console.log(`Found ${validUrls.length} image(s) in Firebase Storage bucket`);
+    return validUrls;
+  } catch (error: any) {
+    // Re-throw with context (no console logging)
+    throw new Error(`Failed to get images from folder "${folderPath}": ${error?.message || 'Unknown error'}`);
   }
 };
 

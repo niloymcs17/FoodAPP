@@ -12,11 +12,15 @@ import { Platform } from 'react-native';
 // For Expo, use environment variables with EXPO_PUBLIC_ prefix
 const databaseURL = process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL;
 
+// Clean storage bucket name (remove quotes if present)
+const rawStorageBucket = process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "YOUR_STORAGE_BUCKET";
+const storageBucket = rawStorageBucket.replace(/^["']|["']$/g, '').trim();
+
 const firebaseConfig: any = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "YOUR_API_KEY",
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "YOUR_AUTH_DOMAIN",
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "YOUR_PROJECT_ID",
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "YOUR_STORAGE_BUCKET",
+  storageBucket: storageBucket,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "YOUR_MESSAGING_SENDER_ID",
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "YOUR_APP_ID",
 };
@@ -66,7 +70,16 @@ if (getApps().length === 0) {
     }
   }
   
-  storage = getStorage(app);
+  // Initialize Storage with explicit bucket if provided
+  if (storageBucket && storageBucket !== "YOUR_STORAGE_BUCKET") {
+    try {
+      storage = getStorage(app, storageBucket);
+    } catch (error) {
+      storage = getStorage(app);
+    }
+  } else {
+    storage = getStorage(app);
+  }
 } else {
   app = getApps()[0];
   
@@ -100,7 +113,16 @@ if (getApps().length === 0) {
     }
   }
   
-  storage = getStorage(app);
+  // Initialize Storage with explicit bucket if provided
+  if (storageBucket && storageBucket !== "YOUR_STORAGE_BUCKET") {
+    try {
+      storage = getStorage(app, storageBucket);
+    } catch (error) {
+      storage = getStorage(app);
+    }
+  } else {
+    storage = getStorage(app);
+  }
 }
 
 export { app, auth, db, realtimeDb, storage };
