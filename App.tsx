@@ -50,6 +50,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import SideMenu from "./screens/SideMenu";
 import { onAuthChange, getCurrentUser } from "./services/firebaseService";
 import { User } from "firebase/auth";
+import { retryPendingOrders } from "./services/orderStorageService";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -81,8 +82,8 @@ const TabNavigator = () => {
     })}
   >
     <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.HOME} component={HomeScreen} />
-    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.PROFILE} component={SideMenu} />
     <Tab.Screen options={{ headerShown: false, tabBarBadge: itemCount }} name={SCREEN_NAME.CART} component={CartScreen} />
+    <Tab.Screen options={{ headerShown: false }} name={SCREEN_NAME.PROFILE} component={SideMenu} />
   </Tab.Navigator>)
 };
 
@@ -118,7 +119,21 @@ const App = () => {
     const unsubscribe = onAuthChange((authUser) => {
       setUser(authUser);
       setLoading(false);
+      
+      // Retry pending orders when user is authenticated
+      if (authUser) {
+        retryPendingOrders().catch(error => {
+          console.error('Error retrying pending orders:', error);
+        });
+      }
     });
+
+    // Retry pending orders on app start if user is authenticated
+    if (currentUser) {
+      retryPendingOrders().catch(error => {
+        console.error('Error retrying pending orders on app start:', error);
+      });
+    }
 
     return () => unsubscribe();
   }, []);

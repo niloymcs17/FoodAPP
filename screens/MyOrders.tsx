@@ -1,19 +1,98 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Pressable, Text, View } from "react-native";
+import { StyleSheet, Pressable, Text, View, ActivityIndicator } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import Ongoingorder from "../components/Ongoingorder";
 import OrderHistory from "../components/OrderHistory";
 import { FontSize, Color, Border } from "../GlobalStyles";
-import { ORDER } from "../Const/Order.const";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getCurrentUser, listenToUserOrders } from "../services/firebaseService";
+import { Timestamp } from "firebase/firestore";
+
+// Transform Firestore order to component format
+const transformOrder = (firestoreOrder: any) => {
+  // Format date from Timestamp
+  let dateString = 'Date not available';
+  if (firestoreOrder.createdAt) {
+    const timestamp = firestoreOrder.createdAt instanceof Timestamp 
+      ? firestoreOrder.createdAt 
+      : Timestamp.fromMillis(firestoreOrder.createdAt);
+    const date = timestamp.toDate();
+    dateString = date.toLocaleString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  // Transform items: label → name
+  const transformedItems = (firestoreOrder.items || []).map((item: any) => {
+    // Ensure price is a valid number
+    const price = typeof item.price === 'number' 
+      ? item.price 
+      : typeof item.price === 'string' 
+        ? parseFloat(item.price) || 0 
+        : 0;
+    
+    return {
+      name: item.label || item.name || 'Unknown Item',
+      quantity: item.quantity || 1,
+      price: price,
+    };
+  });
+
+  return {
+    id: firestoreOrder.id || '',
+    date: dateString,
+    customerName: firestoreOrder.customerName || 'User',
+    status: firestoreOrder.status || 'pending',
+    items: transformedItems,
+    instruction: firestoreOrder.address?.notes || firestoreOrder.instruction || '',
+    total: firestoreOrder.total || 0,
+    paymentMethod: firestoreOrder.paymentMethod || 'Unknown',
+    paymentStatus: firestoreOrder.paymentStatus || 'success',
+    address: firestoreOrder.address,
+  };
+};
 
 const MyOrders = () => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const [activeTab, setActiveTab] = useState<'Ongoing' | 'History'>('Ongoing');
-  const ongoingOrder = ORDER.filter((item: any) => item.status !== 'delivered') || [];
-  const pastOrder = ORDER.filter((item: any) => item.status == 'delivered');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Filter orders based on status
+  const ongoingOrder = orders.filter((item: any) => item.status !== 'delivered' && item.status !== 'cancelled');
+  const pastOrder = orders.filter((item: any) => item.status === 'delivered');
+
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      setError('Please sign in to view your orders');
+      setLoading(false);
+      return;
+    }
+
+    // Use real-time listener for automatic updates
+    const unsubscribe = listenToUserOrders(currentUser.uid, (firestoreOrders) => {
+      try {
+        const transformedOrders = firestoreOrders.map(transformOrder);
+        setOrders(transformedOrders);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error transforming orders:', err);
+        setError('Error loading orders');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <SafeAreaView style={styles.myOrdersContainer} edges={['top']}>
@@ -82,10 +161,29 @@ const MyOrders = () => {
 
       {/* Content */}
       <View style={styles.content}>
-        {activeTab === 'Ongoing' ? (
-          <Ongoingorder data={ongoingOrder} />
-        ) : (
+        {loading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={Color.mainColor} />
+            <Text style={styles.loadingText}>Loading orders...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : activeTab === 'Ongoing' ? (
+          ongoingOrder.length > 0 ? (
+            <Ongoingorder data={ongoingOrder} />
+          ) : (
+            <View style={styles.centerContainer}>
+              <Text style={styles.emptyText}>No ongoing orders</Text>
+            </View>
+          )
+        ) : pastOrder.length > 0 ? (
           <OrderHistory data={pastOrder} />
+        ) : (
+          <View style={styles.centerContainer}>
+            <Text style={styles.emptyText}>No order history</Text>
+          </View>
         )}
       </View>
     </SafeAreaView>
@@ -198,6 +296,27 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: Color.colorGray_100,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: FontSize.size_base,
+    color: Color.colorLightslategray_100,
+  },
+  errorText: {
+    fontSize: FontSize.size_base,
+    color: '#FF3B30',
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: FontSize.size_lg,
+    color: Color.colorLightslategray_100,
+    textAlign: 'center',
   },
 });
 

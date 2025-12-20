@@ -5,8 +5,18 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { ORDER, Order } from '../Const/Order.const';
 import { CURRENCY } from '../GlobalStyles';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
+import { SCREEN_NAME } from '../Const/ScreenName.const';
 
-const Ongoingorder = ({data}:Order[] = ORDER) => {
+const Ongoingorder = ({data = ORDER}: {data?: Order[]}) => {
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+
+  const handlePayment = (order: any) => {
+    // Navigate to payment screen for retry
+    navigation.navigate(SCREEN_NAME.PAYMENT as never);
+  };
 
   return (
 
@@ -21,8 +31,8 @@ const Ongoingorder = ({data}:Order[] = ORDER) => {
           <Text style={styles.itemsHeader}>Items - {order.items.length}</Text>
           {order.items.map((item:any, index:number) => (
             <View key={index} style={styles.item}>
-              <Text>{item.quantity} X {item.name}</Text>
-              <Text >{CURRENCY.INR}{item.price.toFixed(2)}</Text>
+              <Text style={styles.itemName}>{item.quantity} X {item.name}</Text>
+              <Text style={styles.itemPrice}>{CURRENCY.INR}{typeof item.price === 'number' ? item.price.toFixed(2) : '0.00'}</Text>
             </View>
           ))}
         </View>
@@ -32,12 +42,20 @@ const Ongoingorder = ({data}:Order[] = ORDER) => {
         </View>
         <View style={styles.item}>
               <Text>Total: </Text>
-              <Text style={styles.totalAmount}> {CURRENCY.INR}{order.total}</Text>
+              <Text style={styles.totalAmount}> {CURRENCY.INR}{typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}</Text>
             </View>
             <View  style={styles.item}>
               <Text>Payment Method: </Text>
               <Text >{order.paymentMethod}</Text>
             </View>
+            {order.paymentStatus === 'failed' && (
+              <View style={styles.paymentStatusContainer}>
+                <Text style={styles.paymentFailedText}>Payment Failed</Text>
+                {order.errorMessage && (
+                  <Text style={styles.errorMessage}>{order.errorMessage}</Text>
+                )}
+              </View>
+            )}
         <View style={styles.footer}>
           <View style={styles.total}>
             
@@ -45,8 +63,20 @@ const Ongoingorder = ({data}:Order[] = ORDER) => {
           </View>
         </View>
         <View style={styles.actions}>
-          <Button mode="contained" style={styles.cancelButton}>Cancel</Button>
-          <Button mode="contained" style={styles.trackButton}>Track</Button>
+          {order.paymentStatus === 'failed' ? (
+            <Button 
+              mode="contained" 
+              style={styles.payButton}
+              onPress={() => handlePayment(order)}
+            >
+              Pay Now
+            </Button>
+          ) : (
+            <>
+              <Button mode="contained" style={styles.cancelButton}>Cancel</Button>
+              <Button mode="contained" style={styles.trackButton}>Track</Button>
+            </>
+          )}
         </View>
       </Card>
         ))}
@@ -90,7 +120,17 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 4,
+  },
+  itemName: {
+    flex: 0.75,
+    maxWidth: '75%',
+  },
+  itemPrice: {
+    flexShrink: 0,
+    marginLeft: 8,
+    alignSelf: 'flex-start',
   },
   instruction: {
     marginBottom: 16,
@@ -120,6 +160,28 @@ const styles = StyleSheet.create({
   },
   trackButton: {
     backgroundColor: '#2ecc71',
+  },
+  paymentStatusContainer: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ffc107',
+  },
+  paymentFailedText: {
+    color: '#856404',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  errorMessage: {
+    color: '#856404',
+    fontSize: 12,
+  },
+  payButton: {
+    backgroundColor: '#e74c3c',
+    flex: 1,
   },
 });
 

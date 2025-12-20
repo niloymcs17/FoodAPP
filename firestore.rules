@@ -21,27 +21,37 @@ service cloud.firestore {
       // User's orders subcollection
       match /orders/{orderId} {
         // Users can create their own orders
+        // Allow creating orders with paymentStatus: "success", "failed", or "pending"
         allow create: if request.auth != null && 
                        request.auth.uid == userId &&
-                       request.resource.data.userId == request.auth.uid;
+                       request.resource.data.userId == request.auth.uid &&
+                       // Validate paymentStatus if present
+                       (!('paymentStatus' in request.resource.data) || 
+                        request.resource.data.paymentStatus in ['success', 'failed', 'pending']);
         
         // Users can read their own orders
         allow read: if request.auth != null && request.auth.uid == userId;
         
-        // Users can update their own orders (for cancelling - status updates only)
+        // Users can update their own orders
         // Allow update only if:
         // 1. User owns the order
-        // 2. Only status and updatedAt fields can be changed
-        // 3. Status must be a valid order status
+        // 2. Only status, paymentStatus, paymentId, razorpayOrderId, razorpaySignature, errorMessage, and updatedAt can be changed
+        // 3. Status must be a valid order status (if present)
+        // 4. paymentStatus must be valid (if present) - for retry scenarios
         allow update: if request.auth != null && 
                        request.auth.uid == userId &&
                        resource.data.userId == request.auth.uid &&
                        request.resource.data.userId == request.auth.uid &&
-                       // Only status and updatedAt can be changed
-                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
-                       // Status must be valid
-                       request.resource.data.status is string &&
-                       request.resource.data.status in ['pending', 'processing', 'on the way', 'delivered', 'cancelled'];
+                       // Only allowed fields can be changed
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paymentStatus', 'paymentId', 'razorpayOrderId', 'razorpaySignature', 'errorMessage', 'updatedAt']) &&
+                       // Status must be valid if present
+                       (!('status' in request.resource.data) || 
+                        (request.resource.data.status is string &&
+                         request.resource.data.status in ['pending', 'processing', 'on the way', 'delivered', 'cancelled'])) &&
+                       // paymentStatus must be valid if present
+                       (!('paymentStatus' in request.resource.data) || 
+                        (request.resource.data.paymentStatus is string &&
+                         request.resource.data.paymentStatus in ['success', 'failed', 'pending']));
         
         // Users cannot delete orders
         allow delete: if false;

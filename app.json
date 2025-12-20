@@ -13,7 +13,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.niloy.foodapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,6 +27,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-dev-client",
       "expo-asset",
       "expo-router",
       "expo-font"
@@ -35,8 +37,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "67c713f9-1482-4728-8885-e6cc9c484751"
+        "projectId": "fd77ac89-a0f4-4dcd-9fce-4ebe7de19cff"
       }
-    }
+    },
+    "owner": "niloykryptos"
   }
 }

@@ -1,6 +1,7 @@
 // PaymentScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { Image } from 'expo-image';
@@ -9,6 +10,7 @@ import { selectCartTotal, selectCartItems } from '../store/selectors';
 import { clearCart } from '../store/cartSlice';
 import { Color, FontSize, CURRENCY } from '../GlobalStyles';
 import { createOrder, getCurrentUser, getUserData } from '../services/firebaseService';
+import { savePendingOrder } from '../services/orderStorageService';
 import { selectSelectedAddress } from '../store/addressSlice';
 import { User } from 'firebase/auth';
 import ErrorPopup from '../modals/ErrorPopup';
@@ -76,34 +78,61 @@ const PaymentScreen = () => {
       // Verify payment on your backend (recommended)
       // await verifyPayment(data.razorpay_payment_id, data.razorpay_order_id, data.razorpay_signature);
 
-      // Create order in Firestore
+      // Prepare order data
+      const orderData = {
+        items: cartItems.map(item => ({
+          id: item.id,
+          label: item.label,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        total: cartTotal,
+        address: selectedAddress || {},
+        paymentMethod: 'Razorpay',
+        paymentId: data.razorpay_payment_id,
+        razorpayOrderId: data.razorpay_order_id,
+        razorpaySignature: data.razorpay_signature,
+      };
+
+      // Try to create order in Firestore
+      let orderCreated = false;
       try {
-        await createOrder({
-          items: cartItems.map(item => ({
-            id: item.id,
-            label: item.label,
-            price: item.price,
-            quantity: item.quantity,
-          })),
-          total: cartTotal,
-          address: selectedAddress || {},
-          paymentMethod: 'Razorpay',
-          paymentId: data.razorpay_payment_id,
-          razorpayOrderId: data.razorpay_order_id,
-          razorpaySignature: data.razorpay_signature,
-        });
-        console.log('Order created successfully');
+        await createOrder(orderData, 'success');
+        console.log('Order created successfully in Firestore');
+        orderCreated = true;
       } catch (orderError: any) {
-        console.error('Error creating order:', orderError);
-        // Don't block the success flow if order creation fails
-        // The payment was successful, order can be created manually if needed
+        console.error('Error creating order in Firestore:', orderError);
+        
+        // Check if it's a network error
+        if (orderError.isNetworkError || orderError.code === 'NETWORK_ERROR') {
+          // Save to AsyncStorage for retry later
+          try {
+            await savePendingOrder(orderData);
+            console.log('Order saved to local storage for retry');
+            // Still show success since payment was successful
+            orderCreated = true; // Consider it handled
+          } catch (storageError: any) {
+            console.error('Error saving order to local storage:', storageError);
+            // Payment succeeded but we couldn't save order anywhere
+            // Still show success but log the issue
+          }
+        } else {
+          // Non-network error - log but don't block success flow
+          console.error('Non-network error creating order:', orderError);
+        }
       }
 
-      // Clear cart after successful payment
-      dispatch(clearCart());
-
-      setSuccessMessage(`Payment ID: ${data.razorpay_payment_id}`);
-      setShowSuccessPopup(true);
+      // Clear cart after successful payment (only if order was created or saved)
+      if (orderCreated) {
+        dispatch(clearCart());
+        setSuccessMessage(`Payment ID: ${data.razorpay_payment_id}`);
+        setShowSuccessPopup(true);
+      } else {
+        // This shouldn't happen, but handle it just in case
+        setErrorPopupTitle('Payment Successful');
+        setErrorPopupMessage('Payment was successful, but there was an issue saving your order. Please contact support.');
+        setShowErrorPopup(true);
+      }
     } catch (error: any) {
       console.log('Payment Error:', error);
       console.log('Error code:', error.code);
@@ -114,24 +143,60 @@ const PaymentScreen = () => {
       if (error.code === 'PAYMENT_CANCELLED') {
         // Payment was cancelled by user - don't show error, just stop loading
         console.log('Payment cancelled by user');
-      } else if (error.code === 'NETWORK_ERROR') {
-        setErrorPopupTitle('Network Error');
-        setErrorPopupMessage('Please check your internet connection and try again.');
-        setShowErrorPopup(true);
-      } else if (error.code === 'BAD_REQUEST_ERROR') {
-        setErrorPopupTitle('Payment Error');
-        setErrorPopupMessage('Invalid payment details. Please try again.');
-        setShowErrorPopup(true);
-      } else if (error.code === 'SERVER_ERROR') {
-        setErrorPopupTitle('Server Error');
-        setErrorPopupMessage('Something went wrong. Please try again later.');
-        setShowErrorPopup(true);
       } else {
-        // Handle generic errors (including service-level errors and timeouts)
-        const errorMessage = error.message || error.description || 'Payment could not be completed. Please try again.';
-        setErrorPopupTitle('Payment Failed');
-        setErrorPopupMessage(errorMessage);
-        setShowErrorPopup(true);
+        // Payment failed - create order with paymentStatus: "failed"
+        const errorMessage = error.message || error.description || 'Payment could not be completed.';
+        
+        // Prepare order data with failed payment status
+        const orderData = {
+          items: cartItems.map(item => ({
+            id: item.id,
+            label: item.label,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          total: cartTotal,
+          address: selectedAddress || {},
+          paymentMethod: 'Razorpay',
+          errorMessage: errorMessage,
+        };
+
+        // Try to create order in Firestore with paymentStatus: "failed"
+        try {
+          await createOrder(orderData, 'failed');
+          console.log('Order created with failed payment status');
+        } catch (orderError: any) {
+          console.error('Error creating failed payment order:', orderError);
+          // If Firestore write fails, try to save to AsyncStorage
+          if (orderError.isNetworkError || orderError.code === 'NETWORK_ERROR') {
+            try {
+              await savePendingOrder({ ...orderData, paymentStatus: 'failed' });
+              console.log('Failed payment order saved to local storage');
+            } catch (storageError) {
+              console.error('Error saving failed payment order to local storage:', storageError);
+            }
+          }
+        }
+
+        // Don't clear cart on payment failure - user may want to retry
+        // Show error message
+        if (error.code === 'NETWORK_ERROR') {
+          setErrorPopupTitle('Network Error');
+          setErrorPopupMessage('Please check your internet connection and try again.');
+          setShowErrorPopup(true);
+        } else if (error.code === 'BAD_REQUEST_ERROR') {
+          setErrorPopupTitle('Payment Error');
+          setErrorPopupMessage('Invalid payment details. Please try again.');
+          setShowErrorPopup(true);
+        } else if (error.code === 'SERVER_ERROR') {
+          setErrorPopupTitle('Server Error');
+          setErrorPopupMessage('Something went wrong. Please try again later.');
+          setShowErrorPopup(true);
+        } else {
+          setErrorPopupTitle('Payment Failed');
+          setErrorPopupMessage(errorMessage);
+          setShowErrorPopup(true);
+        }
       }
     } finally {
       setIsProcessing(false);
@@ -139,7 +204,7 @@ const PaymentScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header with Back Button */}
       <View style={styles.headerContainer}>
         <Pressable
@@ -204,7 +269,7 @@ const PaymentScreen = () => {
           navigation.navigate(SCREEN_NAME.HOME as never);
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

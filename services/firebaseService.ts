@@ -153,33 +153,61 @@ export const updateUserData = async (userId: string, data: any) => {
 // ==================== FIRESTORE - ORDERS ====================
 
 /**
- * Order status type
+ * Order status type (for order fulfillment)
  */
 export type OrderStatus = 'pending' | 'processing' | 'on the way' | 'delivered' | 'cancelled';
 
 /**
- * Create a new order (uses Firestore)
- * Saves to orders/{userId}/{orderId}
+ * Payment status type (for payment processing)
  */
-export const createOrder = async (orderData: any) => {
+export type PaymentStatus = 'success' | 'failed' | 'pending';
+
+/**
+ * Create a new order (uses Firestore)
+ * Saves to orders/{userId}/orders/{orderId}
+ * @param orderData - Order data to save
+ * @param paymentStatus - Payment status: 'success' | 'failed' | 'pending' (default: 'success')
+ * @returns Promise with order ID and data, or throws error
+ */
+export const createOrder = async (
+  orderData: any,
+  paymentStatus: PaymentStatus = 'success'
+): Promise<{ id: string; success: boolean }> => {
   try {
     const user = getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Save to orders/{userId}/{orderId}
+    // Save to orders/{userId}/orders/{orderId}
     const ordersCollection = collection(db, 'orders', user.uid, 'orders');
     const orderRef = doc(ordersCollection);
     
     await setDoc(orderRef, {
       ...orderData,
       userId: user.uid,
-      status: 'pending' as OrderStatus,
-      createdAt: Timestamp.now(),
+      status: orderData.status || ('pending' as OrderStatus),
+      paymentStatus: paymentStatus,
+      createdAt: orderData.createdAt || Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
     
-    return { id: orderRef.id, ...orderData };
+    return { id: orderRef.id, success: true };
   } catch (error: any) {
+    // Check if it's a network error
+    const isNetworkError = 
+      error.code === 'unavailable' ||
+      error.code === 'deadline-exceeded' ||
+      error.message?.toLowerCase().includes('network') ||
+      error.message?.toLowerCase().includes('offline') ||
+      error.message?.toLowerCase().includes('failed to get document');
+    
+    if (isNetworkError) {
+      // Re-throw with a specific error code for network errors
+      const networkError: any = new Error(error.message || 'Network error: Failed to create order');
+      networkError.code = 'NETWORK_ERROR';
+      networkError.isNetworkError = true;
+      throw networkError;
+    }
+    
     throw new Error(error.message || 'Failed to create order');
   }
 };

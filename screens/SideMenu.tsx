@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Text, View, Pressable, FlatList, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import { FontSize, Color, Border, Padding } from "../GlobalStyles";
@@ -11,13 +13,13 @@ import ConfirmationPopup from '../modals/ConfirmationPopup';
 import ErrorPopup from '../modals/ErrorPopup';
 
 const menuItems = [
-  { title: "My Orders", screen: "MyOrders", icon: require("../assets/iconlybulkdocument.png"), iconBg: "#FFF4E6" },
-  { title: "My Profile", screen: "Profile", icon: require("../assets/iconlybulkprofile.png"), iconBg: "#E8F5E9" },
-  { title: "Delivery Address", screen: "DeliveryAddressList", icon: require("../assets/iconlybulklocation.png"), iconBg: "#E3F2FD" },
-  { title: "Payment Methods", screen: null, icon: require("../assets/iconlybulkwallet.png"), iconBg: "#F3E5F5" },
-  { title: "Contact Us", screen: null, icon: require("../assets/iconlybulkmessage.png"), iconBg: "#FFF3E0" },
-  { title: "Settings", screen: null, icon: require("../assets/iconlybulksetting.png"), iconBg: "#F5F5F5" },
-  { title: "Helps & FAQs", screen: null, icon: require("../assets/vector6.png"), iconBg: "#E0F7FA" },
+  { title: "My Orders", screen: "MyOrders", iconName: "document-text" as const, iconBg: "#FFF4E6" },
+  { title: "My Profile", screen: "Profile", iconName: "person" as const, iconBg: "#E8F5E9" },
+  { title: "Delivery Address", screen: "DeliveryAddressList", iconName: "location" as const, iconBg: "#E3F2FD" },
+  { title: "Payment Methods", screen: null, iconName: "wallet" as const, iconBg: "#F3E5F5" },
+  { title: "Contact Us", screen: null, iconName: "mail" as const, iconBg: "#FFF3E0" },
+  { title: "Settings", screen: null, iconName: "settings" as const, iconBg: "#F5F5F5" },
+  { title: "Helps & FAQs", screen: null, iconName: "help-circle" as const, iconBg: "#E0F7FA" },
 ];
 
 const SideMenu = () => {
@@ -103,7 +105,7 @@ const SideMenu = () => {
       onPress={() => handleNavigation(item.screen)}
     >
       <View style={[styles.iconContainer, { backgroundColor: item.iconBg }]}>
-        <Image style={styles.icon} contentFit="contain" source={item.icon} />
+        <Ionicons name={item.iconName} size={22} color={Color.colorBlack} />
       </View>
       <Text style={styles.menuText}>{item.title}</Text>
       {item.screen && (
@@ -115,7 +117,7 @@ const SideMenu = () => {
   );
 
   return (
-    <View style={styles.sideMenu}>
+    <SafeAreaView style={styles.sideMenu}>
       <View style={styles.header}>
         <View style={styles.profileImageContainer}>
           {user?.photoURL ? (
@@ -166,7 +168,7 @@ const SideMenu = () => {
         ) : (
           <>
             <Text style={styles.logoutText}>Log Out</Text>
-            <Image style={styles.logoutIcon} contentFit="contain" source={require("../assets/group-18072.png")} />
+            <Ionicons name="log-out-outline" size={20} color={Color.colorWhite} />
           </>
         )}
       </Pressable>
@@ -186,7 +188,7 @@ const SideMenu = () => {
         message={errorMessage}
         onClose={() => setShowErrorPopup(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -272,10 +274,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 16,
   },
-  icon: {
-    width: 22,
-    height: 22,
-  },
   menuText: {
     fontSize: FontSize.size_base,
     color: Color.colorBlack,
@@ -319,11 +317,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginRight: 8,
     letterSpacing: 0.5,
-  },
-  logoutIcon: {
-    width: 20,
-    height: 20,
-    tintColor: Color.colorWhite,
   },
 });
 
