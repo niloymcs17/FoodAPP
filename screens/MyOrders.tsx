@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, ActivityIndicator } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import Ongoingorder from "../components/Ongoingorder";
@@ -106,11 +106,7 @@ const MyOrders = () => {
           onPress={() => navigation.goBack()}
         >
           <View style={styles.backButtonContainer}>
-            <Image
-              style={styles.backIcon}
-              contentFit="contain"
-              source={require("../assets/back.png")}
-            />
+            <Ionicons name="arrow-back" size={24} color="#000" />
           </View>
         </Pressable>
         <View style={styles.headerTitleContainer}>

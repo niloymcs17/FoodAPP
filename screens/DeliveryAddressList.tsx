@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, FlatList } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
@@ -95,11 +94,7 @@ const DeliveryAddressList = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Image
-            style={styles.backIcon}
-            contentFit="cover"
-            source={require("../assets/back.png")}
-          />
+          <Ionicons name="arrow-back" size={24} color="#000" />
         </Pressable>
         <Text style={styles.title}>Delivery Addresses</Text>
         <View style={styles.placeholder} />

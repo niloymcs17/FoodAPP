@@ -1,10 +1,10 @@
 // PaymentScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
-import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { SCREEN_NAME } from '../Const/ScreenName.const';
 import { selectCartTotal, selectCartItems } from '../store/selectors';
 import { clearCart } from '../store/cartSlice';
@@ -31,12 +31,13 @@ const PaymentScreen = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any>(null);
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch user and userData on component mount
   useEffect(() => {
     const currentUser = getCurrentUser();
     setUser(currentUser);
-    
+
     if (currentUser) {
       getUserData(currentUser.uid)
         .then((data) => {
@@ -47,6 +48,13 @@ const PaymentScreen = () => {
           // Continue without userData - payment service will handle empty values
         });
     }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+      }
+    };
   }, []);
 
   const handlePayment = async () => {
@@ -74,7 +82,7 @@ const PaymentScreen = () => {
 
       // Handle successful payment
       console.log('Payment Success:', data);
-      
+
       // Verify payment on your backend (recommended)
       // await verifyPayment(data.razorpay_payment_id, data.razorpay_order_id, data.razorpay_signature);
 
@@ -102,7 +110,7 @@ const PaymentScreen = () => {
         orderCreated = true;
       } catch (orderError: any) {
         console.error('Error creating order in Firestore:', orderError);
-        
+
         // Check if it's a network error
         if (orderError.isNetworkError || orderError.code === 'NETWORK_ERROR') {
           // Save to AsyncStorage for retry later
@@ -127,6 +135,12 @@ const PaymentScreen = () => {
         dispatch(clearCart());
         setSuccessMessage(`Payment ID: ${data.razorpay_payment_id}`);
         setShowSuccessPopup(true);
+        // Navigate to My Orders page after 2 seconds
+        navigationTimeoutRef.current = setTimeout(() => {
+          setShowSuccessPopup(false);
+          navigation.navigate(SCREEN_NAME.ORDER as never);
+          navigationTimeoutRef.current = null;
+        }, 2000);
       } else {
         // This shouldn't happen, but handle it just in case
         setErrorPopupTitle('Payment Successful');
@@ -138,7 +152,7 @@ const PaymentScreen = () => {
       console.log('Error code:', error.code);
       console.log('Error message:', error.message);
       console.log('Error description:', error.description);
-      
+
       // Handle payment cancellation or error
       if (error.code === 'PAYMENT_CANCELLED') {
         // Payment was cancelled by user - don't show error, just stop loading
@@ -146,7 +160,7 @@ const PaymentScreen = () => {
       } else {
         // Payment failed - create order with paymentStatus: "failed"
         const errorMessage = error.message || error.description || 'Payment could not be completed.';
-        
+
         // Prepare order data with failed payment status
         const orderData = {
           items: cartItems.map(item => ({
@@ -215,11 +229,7 @@ const PaymentScreen = () => {
           onPress={() => navigation.goBack()}
         >
           <View style={styles.backButtonContainer}>
-            <Image
-              style={styles.backIcon}
-              contentFit="contain"
-              source={require("../assets/back.png")}
-            />
+            <Ionicons name="arrow-back" size={24} color="#000" />
           </View>
         </Pressable>
         <Text style={styles.headerTitle}>Payment</Text>
@@ -259,14 +269,23 @@ const PaymentScreen = () => {
         isVisible={showErrorPopup}
         title={errorPopupTitle}
         message={errorPopupMessage}
-        onClose={() => setShowErrorPopup(false)}
+        onClose={() => {
+          setShowErrorPopup(false);
+          navigation.navigate(SCREEN_NAME.ORDER as never);
+          dispatch(clearCart());
+        }}
       />
       <SuccessPopup
         isVisible={showSuccessPopup}
         message={successMessage}
         onClose={() => {
+          // Clear the timeout if user manually closes the popup
+          if (navigationTimeoutRef.current) {
+            clearTimeout(navigationTimeoutRef.current);
+            navigationTimeoutRef.current = null;
+          }
           setShowSuccessPopup(false);
-          navigation.navigate(SCREEN_NAME.HOME as never);
+          navigation.navigate(SCREEN_NAME.ORDER as never);
         }}
       />
     </SafeAreaView>

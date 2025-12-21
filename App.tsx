@@ -4,7 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Provider, useSelector } from "react-redux";
 import { Ionicons } from '@expo/vector-icons';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { Image } from 'expo-image';
 
 // Polyfill for setImmediate (needed for react-native-swiper on web)
 if (typeof setImmediate === 'undefined') {
@@ -108,17 +109,101 @@ const App = () => {
   const [hideSplashScreen, setHideSplashScreen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const logoScale = useState(new Animated.Value(1))[0];
+  const logoOpacity = useState(new Animated.Value(1))[0];
+  const dot1Opacity = useState(new Animated.Value(0.4))[0];
+  const dot2Opacity = useState(new Animated.Value(0.4))[0];
+  const dot3Opacity = useState(new Animated.Value(0.4))[0];
 
   useEffect(() => {
+    const startTime = Date.now();
+    const MIN_LOADING_TIME = 5000; // 5 seconds in milliseconds
+
+    // Animate logo with pulse effect
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(logoScale, {
+            toValue: 1.1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(logoOpacity, {
+            toValue: 0.8,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(logoScale, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(logoOpacity, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    );
+    pulseAnimation.start();
+
+    // Animate dots in sequence
+    const dotAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(dot1Opacity, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dot1Opacity, {
+          toValue: 0.4,
+          duration: 400,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dot2Opacity, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dot2Opacity, {
+          toValue: 0.4,
+          duration: 400,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dot3Opacity, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+        Animated.timing(dot3Opacity, {
+          toValue: 0.4,
+          duration: 400,
+          easing: Easing.ease,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    dotAnimation.start();
+
     // Check initial auth state
     const currentUser = getCurrentUser();
     setUser(currentUser);
-    setLoading(false);
 
     // Listen to auth state changes
     const unsubscribe = onAuthChange((authUser) => {
       setUser(authUser);
-      setLoading(false);
       
       // Retry pending orders when user is authenticated
       if (authUser) {
@@ -135,15 +220,53 @@ const App = () => {
       });
     }
 
-    return () => unsubscribe();
+    // Ensure minimum loading time of 4 seconds
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime);
+
+    const timer = setTimeout(() => {
+      pulseAnimation.stop();
+      dotAnimation.stop();
+      setLoading(false);
+    }, remainingTime);
+
+    return () => {
+      clearTimeout(timer);
+      pulseAnimation.stop();
+      dotAnimation.stop();
+      unsubscribe();
+    };
   }, []);
 
   if (loading) {
     return (
       <Provider store={store}>
         <SafeAreaProvider>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="tomato" />
+          <View style={styles.loadingContainer}>
+            <Animated.View
+              style={[
+                styles.logoContainer,
+                {
+                  transform: [{ scale: logoScale }],
+                  opacity: logoOpacity,
+                },
+              ]}
+            >
+              <Image
+                source={require('./assets/Mothers hut logo.png')}
+                style={styles.logo}
+                contentFit="contain"
+              />
+            </Animated.View>
+            <View style={styles.loadingIndicatorContainer}>
+              <ActivityIndicator size="large" color="tomato" />
+              <View style={styles.loadingDots}>
+                <Animated.View style={[styles.dot, { opacity: dot1Opacity }]} />
+                <Animated.View style={[styles.dot, { opacity: dot2Opacity }]} />
+                <Animated.View style={[styles.dot, { opacity: dot3Opacity }]} />
+              </View>
+            </View>
+            <Text style={styles.loadingText}>Cooking your food 🍳👨‍🍳</Text>
           </View>
         </SafeAreaProvider>
       </Provider>
@@ -160,5 +283,47 @@ const App = () => {
     </Provider>
   );
 };
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  logoContainer: {
+    marginBottom: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 280,
+    height: 280,
+  },
+  loadingIndicatorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  loadingDots: {
+    flexDirection: 'row',
+    marginTop: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'tomato',
+    marginHorizontal: 4,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 18,
+    color: '#333',
+    fontWeight: '500',
+  },
+});
 
 export default App;

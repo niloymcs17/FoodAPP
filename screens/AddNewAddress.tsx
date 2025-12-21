@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, TextInput, ScrollView, ActivityIndicator } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, useRoute, ParamListBase, RouteProp } from "@react-navigation/native";
@@ -225,11 +224,7 @@ const AddNewAddress = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Image
-            style={styles.backIcon}
-            contentFit="cover"
-            source={require("../assets/back.png")}
-          />
+          <Ionicons name="arrow-back" size={24} color="#000" />
         </Pressable>
         <Text style={styles.title}>Delivery Address</Text>
       </View>

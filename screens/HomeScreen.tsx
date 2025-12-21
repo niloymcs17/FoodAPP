@@ -7,45 +7,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Swiper from 'react-native-swiper';
 import { Image as ExpoImage } from 'expo-image';
 import { CATAGORY, Catagory } from '../Const/Catagory.const';
-import { Divider } from 'react-native-paper';
 import { ITEM, Item } from '../Const/Items.const';
 import Items from '../components/Items';
 import { getImagesFromFolder } from '../services/firebaseService';
 
 const { width: viewportWidth } = Dimensions.get('window');
 
-// Fallback carousel images (original hardcoded URLs)
-const fallbackCarouselItems = [
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_5.jpg",
-  },
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_4.jpg",
-  },
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_3.jpg",
-  },
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_1.jpg",
-  },
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_6.jpg",
-  },
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/Banner_2.jpg",
-  },
-  {
-    imgUrl: "https://mothershut.com/RestoFolders/MOTHERSHUT_Supela_Bhilai/popup_image_banner_1.jpg",
-  },
-];
-
 const HomeScreen = () => {
   const categories: Catagory[] = CATAGORY;
   const [searchText, setSearchText] = useState('');
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [carouselItems, setCarouselItems] = useState<{ imgUrl: string }[]>(fallbackCarouselItems);
-  const [loadingCarousel, setLoadingCarousel] = useState(true);
+  const [carouselItems, setCarouselItems] = useState<{ imgUrl: string }[]>([]);
 
   const handleCategoryPress = (categoryTitle: string) => {
     setSelectedCategory(categoryTitle);
@@ -66,38 +39,12 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchCarouselImages = async () => {
       try {
-        setLoadingCarousel(true);
-        
-        // Try different path formats
-        let imageUrls: string[] = [];
-        const pathsToTry = ['carouselimage/', 'carouselimage'];
-        
-        for (const path of pathsToTry) {
-          try {
-            imageUrls = await getImagesFromFolder(path);
-            if (imageUrls.length > 0) {
-              break;
-            }
-          } catch (pathError: any) {
-            const errorCode = pathError?.code || pathError?.message || 'unknown';
-            // If it's a permission/unknown error, don't try other paths
-            if (errorCode.includes('storage/unknown') || errorCode.includes('storage/unauthorized')) {
-              break;
-            }
-            continue;
-          }
-        }
-        
+        const imageUrls = await getImagesFromFolder('carouselimage/');
         if (imageUrls.length > 0) {
           setCarouselItems(imageUrls.map(url => ({ imgUrl: url })));
-        } else {
-          setCarouselItems(fallbackCarouselItems);
         }
       } catch (error) {
-        // Fallback to original hardcoded images
-        setCarouselItems(fallbackCarouselItems);
-      } finally {
-        setLoadingCarousel(false);
+        // Silently fail - carousel will not be shown if no images
       }
     };
 
@@ -127,7 +74,10 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={{flex:1}}>
-      <TopBar onBackPress={showSearchResults ? handleClearFilter : undefined} />
+      <TopBar 
+        back={showSearchResults} 
+        onBackPress={showSearchResults ? handleClearFilter : undefined} 
+      />
         <View style={styles.homeScreen}>
           <View style={styles.searchBarContainer}>
             <SearchBar 
@@ -192,7 +142,7 @@ const HomeScreen = () => {
                       <ExpoImage style={styles.itemImage} contentFit="cover" source={item.image} />
                       <Text style={styles.itemTitle}>{item.title}</Text>
                     </View>
-                    <Divider />
+                    <View style={styles.divider} />
                   </Pressable>
                 ))}
               </View>
@@ -299,6 +249,11 @@ const styles = StyleSheet.create({
     width: 81,
     height: 81,
     borderRadius: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    width: '100%',
   },
 });
 
