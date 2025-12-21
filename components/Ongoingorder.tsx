@@ -12,6 +12,7 @@ import { getCurrentUser, getUserData, updateOrderPaymentStatus, updateOrderStatu
 import processPayment from '../services/paymentService';
 import SuccessPopup from '../modals/SuccessPopup';
 import ErrorPopup from '../modals/ErrorPopup';
+import ConfirmationPopup from '../modals/ConfirmationPopup';
 
 const STATUS_MESSAGES: { [key: string]: string } = {
   'pending': 'Your order is pending and will be processed soon.',
@@ -30,6 +31,8 @@ const Ongoingorder = ({data = ORDER}: {data?: Order[]}) => {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorPopupTitle, setErrorPopupTitle] = useState('Error');
   const [errorPopupMessage, setErrorPopupMessage] = useState('');
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<any>(null);
 
   const handlePayment = async (order: any) => {
     if (!order.id) {
@@ -100,7 +103,7 @@ const Ongoingorder = ({data = ORDER}: {data?: Order[]}) => {
     }
   };
 
-  const handleCancel = async (order: any) => {
+  const handleCancel = (order: any) => {
     if (!order.id) {
       setErrorPopupTitle('Error');
       setErrorPopupMessage('Order ID is missing');
@@ -116,10 +119,22 @@ const Ongoingorder = ({data = ORDER}: {data?: Order[]}) => {
       return;
     }
 
-    setCancellingOrderId(order.id);
+    // Show confirmation popup
+    setOrderToCancel(order);
+    setShowCancelConfirmation(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!orderToCancel || !orderToCancel.id) {
+      setShowCancelConfirmation(false);
+      return;
+    }
+
+    setShowCancelConfirmation(false);
+    setCancellingOrderId(orderToCancel.id);
 
     try {
-      await updateOrderStatus(order.id, 'cancelled');
+      await updateOrderStatus(orderToCancel.id, 'cancelled');
       setSuccessMessage('Order has been cancelled successfully.');
       setShowSuccessPopup(true);
     } catch (error: any) {
@@ -129,6 +144,7 @@ const Ongoingorder = ({data = ORDER}: {data?: Order[]}) => {
       setShowErrorPopup(true);
     } finally {
       setCancellingOrderId(null);
+      setOrderToCancel(null);
     }
   };
 
@@ -231,6 +247,19 @@ const Ongoingorder = ({data = ORDER}: {data?: Order[]}) => {
       title={errorPopupTitle}
       message={errorPopupMessage}
       onClose={() => setShowErrorPopup(false)}
+    />
+    <ConfirmationPopup
+      isVisible={showCancelConfirmation}
+      title="Cancel Order"
+      message={`Are you sure you want to cancel order #${orderToCancel?.id}? This action cannot be undone.`}
+      confirmText="Yes, Cancel"
+      cancelText="No, Keep Order"
+      confirmButtonColor="#e74c3c"
+      onConfirm={confirmCancel}
+      onCancel={() => {
+        setShowCancelConfirmation(false);
+        setOrderToCancel(null);
+      }}
     />
     </>
   );

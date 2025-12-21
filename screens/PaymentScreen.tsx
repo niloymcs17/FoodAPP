@@ -107,7 +107,7 @@ const PaymentScreen = () => {
       // await verifyPayment(data.razorpay_payment_id, data.razorpay_order_id, data.razorpay_signature);
 
       // Prepare order data
-      const orderData = {
+      const orderData: any = {
         items: paymentItems.map((item: any) => ({
           id: item.id,
           label: item.label,
@@ -118,11 +118,17 @@ const PaymentScreen = () => {
         address: paymentAddress || {},
         paymentMethod: 'Razorpay',
         paymentId: data.razorpay_payment_id,
-        razorpayOrderId: data.razorpay_order_id,
-        razorpaySignature: data.razorpay_signature,
         // Include order ID if retrying payment for existing order
         ...(orderFromRoute?.id && { orderId: orderFromRoute.id }),
       };
+
+      // Only include these fields if they are defined (Firestore doesn't allow undefined)
+      if (data.razorpay_order_id) {
+        orderData.razorpayOrderId = data.razorpay_order_id;
+      }
+      if (data.razorpay_signature) {
+        orderData.razorpaySignature = data.razorpay_signature;
+      }
 
       // Try to create order in Firestore
       let orderCreated = false;

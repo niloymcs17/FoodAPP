@@ -182,8 +182,13 @@ export const createOrder = async (
     const ordersCollection = collection(db, 'orders', user.uid, 'orders');
     const orderRef = doc(ordersCollection);
     
+    // Filter out undefined values (Firestore doesn't allow undefined)
+    const cleanOrderData = Object.fromEntries(
+      Object.entries(orderData).filter(([_, value]) => value !== undefined)
+    );
+    
     await setDoc(orderRef, {
-      ...orderData,
+      ...cleanOrderData,
       userId: user.uid,
       status: orderData.status || ('pending' as OrderStatus),
       paymentStatus: paymentStatus,
