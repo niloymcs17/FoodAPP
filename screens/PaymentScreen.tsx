@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import { SCREEN_NAME } from '../Const/ScreenName.const';
@@ -17,12 +17,30 @@ import ErrorPopup from '../modals/ErrorPopup';
 import SuccessPopup from '../modals/SuccessPopup';
 import processPayment from '../services/paymentService';
 
+type PaymentScreenRouteProp = RouteProp<{ params: { order?: any } }, 'params'>;
+
 const PaymentScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute<PaymentScreenRouteProp>();
   const dispatch = useDispatch();
   const cartTotal = useSelector(selectCartTotal);
   const cartItems = useSelector(selectCartItems);
   const selectedAddress = useSelector(selectSelectedAddress);
+  
+  // Get order from route params if available (for retry payment from My Orders)
+  const orderFromRoute = route.params?.order;
+  
+  // Use order data if available, otherwise use cart data
+  const paymentTotal = orderFromRoute ? orderFromRoute.total : cartTotal;
+  const paymentItems = orderFromRoute 
+    ? orderFromRoute.items.map((item: any) => ({
+        id: item.id || '',
+        label: item.name || item.label || 'Unknown Item',
+        price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
+        quantity: item.quantity || 1,
+      }))
+    : cartItems;
+  const paymentAddress = orderFromRoute ? orderFromRoute.address : selectedAddress;
   const [isProcessing, setIsProcessing] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorPopupTitle, setErrorPopupTitle] = useState('Error');
@@ -58,9 +76,11 @@ const PaymentScreen = () => {
   }, []);
 
   const handlePayment = async () => {
-    if (cartTotal <= 0) {
+    if (paymentTotal <= 0) {
       setErrorPopupTitle('Error');
-      setErrorPopupMessage('Cart is empty. Please add items to cart.');
+      setErrorPopupMessage(orderFromRoute 
+        ? 'Order amount is invalid. Please contact support.' 
+        : 'Cart is empty. Please add items to cart.');
       setShowErrorPopup(true);
       return;
     }
@@ -78,7 +98,7 @@ const PaymentScreen = () => {
 
     try {
       // Use payment service to process payment
-      const data = await processPayment(cartTotal, currentUser, userData);
+      const data = await processPayment(paymentTotal, currentUser, userData);
 
       // Handle successful payment
       console.log('Payment Success:', data);
@@ -88,18 +108,20 @@ const PaymentScreen = () => {
 
       // Prepare order data
       const orderData = {
-        items: cartItems.map(item => ({
+        items: paymentItems.map((item: any) => ({
           id: item.id,
           label: item.label,
           price: item.price,
           quantity: item.quantity,
         })),
-        total: cartTotal,
-        address: selectedAddress || {},
+        total: paymentTotal,
+        address: paymentAddress || {},
         paymentMethod: 'Razorpay',
         paymentId: data.razorpay_payment_id,
         razorpayOrderId: data.razorpay_order_id,
         razorpaySignature: data.razorpay_signature,
+        // Include order ID if retrying payment for existing order
+        ...(orderFromRoute?.id && { orderId: orderFromRoute.id }),
       };
 
       // Try to create order in Firestore
@@ -130,9 +152,12 @@ const PaymentScreen = () => {
         }
       }
 
-      // Clear cart after successful payment (only if order was created or saved)
+      // Clear cart after successful payment (only if order was created or saved, and it's not a retry)
       if (orderCreated) {
-        dispatch(clearCart());
+        // Only clear cart if it's a new order, not a retry payment
+        if (!orderFromRoute) {
+          dispatch(clearCart());
+        }
         setSuccessMessage(`Payment ID: ${data.razorpay_payment_id}`);
         setShowSuccessPopup(true);
         // Navigate to My Orders page after 2 seconds
@@ -163,16 +188,18 @@ const PaymentScreen = () => {
 
         // Prepare order data with failed payment status
         const orderData = {
-          items: cartItems.map(item => ({
+          items: paymentItems.map((item: any) => ({
             id: item.id,
             label: item.label,
             price: item.price,
             quantity: item.quantity,
           })),
-          total: cartTotal,
-          address: selectedAddress || {},
+          total: paymentTotal,
+          address: paymentAddress || {},
           paymentMethod: 'Razorpay',
           errorMessage: errorMessage,
+          // Include order ID if retrying payment for existing order
+          ...(orderFromRoute?.id && { orderId: orderFromRoute.id }),
         };
 
         // Try to create order in Firestore with paymentStatus: "failed"
@@ -241,18 +268,18 @@ const PaymentScreen = () => {
           <Text style={styles.summaryLabel}>Order Summary</Text>
           <View style={styles.itemRow}>
             <Text style={styles.itemLabel}>Items:</Text>
-            <Text style={styles.itemValue}>{cartItems.length}</Text>
+            <Text style={styles.itemValue}>{paymentItems.length}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount:</Text>
-            <Text style={styles.totalAmount}>{CURRENCY.INR}{cartTotal.toFixed(2)}</Text>
+            <Text style={styles.totalAmount}>{CURRENCY.INR}{paymentTotal.toFixed(2)}</Text>
           </View>
         </View>
 
         <Pressable
           style={[styles.payButton, isProcessing && styles.payButtonDisabled]}
           onPress={handlePayment}
-          disabled={isProcessing || cartTotal <= 0}
+          disabled={isProcessing || paymentTotal <= 0}
         >
           {isProcessing ? (
             <ActivityIndicator color={Color.colorWhite} />

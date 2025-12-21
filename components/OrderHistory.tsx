@@ -1,25 +1,98 @@
 // src/components/Timeline.js
 
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { ORDER, Order } from '../Const/Order.const';
 import { CURRENCY } from '../GlobalStyles';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase } from '@react-navigation/native';
-import { SCREEN_NAME } from '../Const/ScreenName.const';
+import { getCurrentUser, getUserData, updateOrderPaymentStatus } from '../services/firebaseService';
+import processPayment from '../services/paymentService';
+import SuccessPopup from '../modals/SuccessPopup';
+import ErrorPopup from '../modals/ErrorPopup';
 
 const OrderHistory = ({ data = ORDER }: { data?: Order[] }) => {
   const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
+  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorPopupTitle, setErrorPopupTitle] = useState('Error');
+  const [errorPopupMessage, setErrorPopupMessage] = useState('');
 
-  const handlePayment = (order: any) => {
-    // Navigate to payment screen for retry
-    navigation.navigate(SCREEN_NAME.PAYMENT as never);
+  const handlePayment = async (order: any) => {
+    if (!order.id) {
+      setErrorPopupTitle('Error');
+      setErrorPopupMessage('Order ID is missing');
+      setShowErrorPopup(true);
+      return;
+    }
+
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      setErrorPopupTitle('Authentication Required');
+      setErrorPopupMessage('Please sign in to proceed with payment.');
+      setShowErrorPopup(true);
+      return;
+    }
+
+    setProcessingOrderId(order.id);
+
+    try {
+      // Get user data for payment
+      let userData;
+      try {
+        userData = await getUserData(currentUser.uid);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        // Continue without userData
+      }
+
+      // Process payment directly with Razorpay
+      const paymentData = await processPayment(order.total, currentUser, userData);
+
+      // Update order in Firestore with successful payment
+      await updateOrderPaymentStatus(order.id, 'success', {
+        paymentId: paymentData.razorpay_payment_id,
+        razorpayOrderId: paymentData.razorpay_order_id,
+        razorpaySignature: paymentData.razorpay_signature,
+      });
+
+      setSuccessMessage(`Payment ID: ${paymentData.razorpay_payment_id}`);
+      setShowSuccessPopup(true);
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      
+      // Update order with failed payment status if it's not a cancellation
+      if (error.code !== 'PAYMENT_CANCELLED') {
+        try {
+          await updateOrderPaymentStatus(order.id, 'failed', {
+            errorMessage: error.message || error.description || 'Payment could not be completed.',
+          });
+        } catch (updateError) {
+          console.error('Error updating order payment status:', updateError);
+        }
+      }
+
+      // Show error message
+      if (error.code === 'PAYMENT_CANCELLED') {
+        // Payment was cancelled by user - don't show error
+        console.log('Payment cancelled by user');
+      } else {
+        const errorMessage = error.message || error.description || 'Payment could not be completed.';
+        setErrorPopupTitle('Payment Failed');
+        setErrorPopupMessage(errorMessage);
+        setShowErrorPopup(true);
+      }
+    } finally {
+      setProcessingOrderId(null);
+    }
   };
 
   return (
-
+    <>
     <ScrollView contentContainerStyle={styles.container}>
       {data.map((order: any, index: number) => (
         <Card key={index} style={styles.card}>
@@ -36,10 +109,12 @@ const OrderHistory = ({ data = ORDER }: { data?: Order[] }) => {
               </View>
             ))}
           </View>
-          <View style={styles.instruction}>
-            <Text style={styles.instructionHeader}>Order Instruction</Text>
-            <Text>{order.instruction}</Text>
-          </View>
+          {order.instruction && (
+            <View style={styles.instruction}>
+              <Text style={styles.instructionHeader}>Order Instruction</Text>
+              <Text>{order.instruction}</Text>
+            </View>
+          )}
           <View style={styles.item}>
             <Text>Total: </Text>
             <Text style={styles.totalAmount}> {CURRENCY.INR}{typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}</Text>
@@ -48,6 +123,19 @@ const OrderHistory = ({ data = ORDER }: { data?: Order[] }) => {
             <Text>Payment Method: </Text>
             <Text >{order.paymentMethod}</Text>
           </View>
+          {(order.status === 'cancelled' || order.status === 'delivered') && (
+            <View style={[
+              styles.statusBanner,
+              order.status === 'cancelled' ? styles.cancelledBanner : styles.deliveredBanner
+            ]}>
+              <Text style={[
+                styles.statusBannerText,
+                order.status === 'cancelled' ? styles.cancelledText : styles.deliveredText
+              ]}>
+                {order.status === 'cancelled' ? 'Order Cancelled' : 'Order Delivered'}
+              </Text>
+            </View>
+          )}
           {order.paymentStatus === 'failed' && (
             <View style={styles.paymentStatusContainer}>
               <Text style={styles.paymentFailedText}>Payment Failed</Text>
@@ -58,20 +146,31 @@ const OrderHistory = ({ data = ORDER }: { data?: Order[] }) => {
                 mode="contained" 
                 style={styles.payButton}
                 onPress={() => handlePayment(order)}
+                disabled={processingOrderId === order.id}
               >
-                Pay Now
+                {processingOrderId === order.id ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  'Pay Now'
+                )}
               </Button>
             </View>
           )}
-          <View style={styles.footer}>
-            <View style={styles.total}>
-
-              <Text></Text>
-            </View>
-          </View>
         </Card>
       ))}
     </ScrollView>
+    <SuccessPopup
+      isVisible={showSuccessPopup}
+      message={successMessage}
+      onClose={() => setShowSuccessPopup(false)}
+    />
+    <ErrorPopup
+      isVisible={showErrorPopup}
+      title={errorPopupTitle}
+      message={errorPopupMessage}
+      onClose={() => setShowErrorPopup(false)}
+    />
+    </>
   );
 };
 
@@ -130,17 +229,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  total: {
-    alignItems: 'flex-end',
-  },
   totalAmount: {
     fontWeight: 'bold',
-    color: '#e74c3c',
+    color: '#ff9800',
+  },
+  orderStatus: {
+    fontWeight: '600',
+    textTransform: 'capitalize',
+    color: '#2ecc71',
+  },
+  statusBanner: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    alignItems: 'center',
+  },
+  cancelledBanner: {
+    backgroundColor: '#fee',
+    borderLeftColor: '#e74c3c',
+  },
+  deliveredBanner: {
+    backgroundColor: '#efe',
+    borderLeftColor: '#2ecc71',
+  },
+  statusBannerText: {
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  cancelledText: {
+    color: '#c0392b',
+  },
+  deliveredText: {
+    color: '#27ae60',
   },
   paymentStatusContainer: {
     backgroundColor: '#fff3cd',

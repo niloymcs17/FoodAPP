@@ -256,6 +256,50 @@ export const updateOrderStatus = async (orderId: string, status: OrderStatus) =>
 };
 
 /**
+ * Update order payment status (uses Firestore)
+ * Updates in orders/{userId}/orders/{orderId}
+ * @param orderId - The order ID to update
+ * @param paymentStatus - The new payment status: 'success' | 'failed' | 'pending'
+ * @param paymentData - Optional payment data (paymentId, razorpayOrderId, razorpaySignature)
+ */
+export const updateOrderPaymentStatus = async (
+  orderId: string,
+  paymentStatus: PaymentStatus,
+  paymentData?: {
+    paymentId?: string;
+    razorpayOrderId?: string;
+    razorpaySignature?: string;
+    errorMessage?: string;
+  }
+) => {
+  try {
+    const user = getCurrentUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const orderRef = doc(db, 'orders', user.uid, 'orders', orderId);
+    const updateData: any = {
+      paymentStatus,
+      updatedAt: Timestamp.now(),
+    };
+
+    if (paymentData) {
+      if (paymentData.paymentId) updateData.paymentId = paymentData.paymentId;
+      if (paymentData.razorpayOrderId) updateData.razorpayOrderId = paymentData.razorpayOrderId;
+      if (paymentData.razorpaySignature) updateData.razorpaySignature = paymentData.razorpaySignature;
+      if (paymentData.errorMessage) updateData.errorMessage = paymentData.errorMessage;
+      // Clear error message if payment is successful
+      if (paymentStatus === 'success') {
+        updateData.errorMessage = null;
+      }
+    }
+
+    await updateDoc(orderRef, updateData);
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to update order payment status');
+  }
+};
+
+/**
  * Get order by ID (uses Firestore)
  * Reads from orders/{userId}/orders/{orderId}
  */

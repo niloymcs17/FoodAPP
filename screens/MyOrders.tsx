@@ -66,8 +66,10 @@ const MyOrders = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Filter orders based on status
+  // Ongoing: orders that are not delivered and not cancelled
   const ongoingOrder = orders.filter((item: any) => item.status !== 'delivered' && item.status !== 'cancelled');
-  const pastOrder = orders.filter((item: any) => item.status === 'delivered');
+  // History: orders that are delivered or cancelled
+  const pastOrder = orders.filter((item: any) => item.status === 'delivered' || item.status === 'cancelled');
 
   useEffect(() => {
     const currentUser = getCurrentUser();
